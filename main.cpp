@@ -13,15 +13,19 @@ using namespace std;
 //Each table can have multiple pages and each page can have multiple tables
 
 int main() {
-	vector<Record> r;
+	vector<Record> r, rec;
 	for(int i=0; i<3; i++) {
 		string s;
 		cin>>s;
 		r.push_back(Record(s));
 	}
 	Table t = Table(r, 10);
-	t.getTable();
-	Page p = Page(r, 13);
-	p.getPageInfo();
+	// t.showTable();
+	// cout<<t.compareTable(k)<<endl;
+	// cout<<s.compareTable(t)<<endl;
+	DiskFileMgr::writeTable(t);
+	DiskFileMgr::showDB();
+	// Page p = Page(r, 13);
+	// p.showPageInfo();
 	return 0;
 }

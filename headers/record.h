@@ -18,11 +18,18 @@ public:
 		rec = input;
 	}
 
-	string getRecord() {
+	string showRecord() {
 		return rec;
 	}
 
 	void setRecord(string input) {
 		rec = input;
 	}
+
+	bool compareRecord(Record r);
 };
+
+bool Record::compareRecord(Record r) {
+	if(rec != r.rec) return false;
+	return true;
+}

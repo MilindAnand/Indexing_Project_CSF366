@@ -20,11 +20,11 @@ public:
 		startAddr = addr;
 	}
 
-	void getPageInfo() {
+	void showPageInfo() {
 		cout<<"Starting address : "<<startAddr<<endl;
 		cout<<"Records : "<<endl;
 		for(int i=0; i<pageLength; i++) {
-			cout<<r[i].getRecord()<<endl;
+			cout<<r[i].showRecord()<<endl;
 		}
 	}
 

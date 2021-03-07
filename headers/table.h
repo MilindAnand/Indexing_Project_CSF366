@@ -17,6 +17,18 @@ public:
 		numOfRows = r.size();
 	}
 
+	int retSA(){
+		return startAddr;
+	}
+
+	int retNR(){
+		return numOfRows;
+	}
+
+	Record retRec(int i){
+		return rows[i];
+	}
+
 	void showTable();
 
 	bool compareTable(Table t);

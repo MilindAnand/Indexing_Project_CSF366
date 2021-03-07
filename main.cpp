@@ -17,10 +17,11 @@ int main() {
 	for(int i=0; i<3; i++) {
 		string s;
 		cin>>s;
+		//cin.getline(s, recordSize);
 		r.push_back(Record(s));
 	}
 	Table t = Table(r, 10);
-	// t.showTable();
+	t.showTable();
 	// cout<<t.compareTable(k)<<endl;
 	// cout<<s.compareTable(t)<<endl;
 	DiskFileMgr::writeTable(t);

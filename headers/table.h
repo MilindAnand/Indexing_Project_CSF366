@@ -5,7 +5,7 @@ class Table {
 private: 
 	vector<Record> rows;
 	int numOfRows, startAddr;
-	Page startPage, endPage;
+	int startPageID, endPageID;
 public:
 	Table() {
 
@@ -27,6 +27,11 @@ public:
 
 	Record retRec(int i){
 		return rows[i];
+	}
+
+	void setPgNo(int sp, int ep){
+		startPageID = sp;
+		endPageID = ep;
 	}
 
 	void showTable();

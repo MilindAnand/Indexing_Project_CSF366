@@ -7,6 +7,7 @@ class Page {
 private:
 	vector<Record> r;
 	int startAddr;
+	int numRec;
 public:
 	Page() {
 		for(int i=0; i<pageLength; i++) {
@@ -18,12 +19,13 @@ public:
 	Page(vector<Record> inp, int addr) {
 		r = inp;
 		startAddr = addr;
+		numRec = inp.size();
 	}
 
 	void showPageInfo() {
 		cout<<"Starting address : "<<startAddr<<endl;
 		cout<<"Records : "<<endl;
-		for(int i=0; i<pageLength; i++) {
+		for(int i=0; i<numRec; i++) {
 			cout<<r[i].showRecord()<<endl;
 		}
 	}

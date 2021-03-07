@@ -32,6 +32,22 @@ int main() {
 	p.showPageInfo();*/
 
 	cout<<"\n\nTrial for pages:\n\n";
-	DiskFileMgr::retrievePage(3);
+	//DiskFileMgr::retrievePage(3, 3);
+
+	DiskFileMgr::buildPageFile();
+
+	//reading thru pageinfo file
+	ifstream pgf;
+	pgf.open("./database/Pageinfo.txt", ios::in);
+	for (int i = 0; i < 4; ++i)
+	{
+		int pAddr, pId, pSize;
+		pgf>>pAddr>>pId>>pSize;
+		//cout<<pAddr<<" "<<pId<<" "<<pSize<<"\n";
+		cout<<pId<<endl;
+		DiskFileMgr::retrievePage(pAddr, pSize);
+		cout<<endl<<endl;	
+	}
+	pgf.close();
 	return 0;
 }

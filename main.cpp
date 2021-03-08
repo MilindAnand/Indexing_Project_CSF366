@@ -14,19 +14,40 @@ using namespace std;
 
 int main() {
 	vector<Record> r, rec;
-	for(int i=0; i<3; i++) {
+	/*for(int i=0; i<5; i++) {
 		string s;
 		cin>>s;
 		//cin.getline(s, recordSize);
 		r.push_back(Record(s));
 	}
 	Table t = Table(r, 10);
-	t.showTable();
+	t.showTable();*/
 	// cout<<t.compareTable(k)<<endl;
 	// cout<<s.compareTable(t)<<endl;
-	DiskFileMgr::writeTable(t);
+	//DiskFileMgr::writeTable(t);
 	DiskFileMgr::showDB();
-	// Page p = Page(r, 13);
-	// p.showPageInfo();
+
+	/*cout<<"Page part:\n\n";
+	Page p = Page(r, 13);
+	p.showPageInfo();*/
+
+	cout<<"\n\nTrial for pages:\n\n";
+	//DiskFileMgr::retrievePage(3, 3);
+
+	DiskFileMgr::buildPageFile();
+
+	//reading thru pageinfo file
+	ifstream pgf;
+	pgf.open("./database/Pageinfo.txt", ios::in);
+	for (int i = 0; i < 4; ++i)
+	{
+		int pAddr, pId, pSize;
+		pgf>>pAddr>>pId>>pSize;
+		//cout<<pAddr<<" "<<pId<<" "<<pSize<<"\n";
+		cout<<pId<<endl;
+		DiskFileMgr::retrievePage(pAddr, pSize);
+		cout<<endl<<endl;	
+	}
+	pgf.close();
 	return 0;
 }

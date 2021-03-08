@@ -14,7 +14,11 @@ public:
 		//function to modify records in particular table
 	}
 
-	// static void searchTable(Table t);
+	//static void searchTable(Table t);
+
+	static void retrievePage(int pgID, int pgSize);
+
+	static void buildPageFile();
 
 	static void showDB();
 };
@@ -67,8 +71,8 @@ void DiskFileMgr::showDB() {
 	int SA=-1, NR=-1;	
 	file_obj >> SA;
 	file_obj >> NR;
-	char buf;
-	file_obj >> buf;
+	char buf[2];
+	file_obj.getline(buf, 1);
 	if(SA==-1 && NR==-1) 
 	{
 		cout<<"Empty database\n";
@@ -86,7 +90,61 @@ void DiskFileMgr::showDB() {
 		}
 		ptr = Table(rec, SA);
 		ptr.showTable();
-		//if(empty) cout<<"Empty database\n";
 	}
 	file_obj.close();
+}
+
+void DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)	//for now pgID is used, once I figure out how to store address of page and use it, probably from index file, this will need an edit
+{
+	ifstream fp;
+	fp.open("./database/dataFile.txt", ios::in);
+	/*string toignore;
+	getline(fp, toignore);
+	*/
+	vector<Record> rec;
+	//fp.seekg(recordSize*pageLength*pgID, ios::cur);			//NOTE: This assumes pgID starts from 0, if it starts from 1, then replace pgID with (pgID-1)
+	//another assumption used here is the fixed size of each record, if that isnt met then the address will be calculated wrongly
+	//if address is known, use fp.seekg(pgAddr, ios::cur) instead
+
+	fp.seekg(pgAddr, ios::cur);
+	//cout<<"Pre loop";
+	for (int i = 0; i < pgSize; ++i)						//Need to change this from pageLength to length of 
+	{
+		char tmp[recordSize];
+		fp.getline(tmp, recordSize);
+		//cout<<tmp<<endl;
+		Record r = Record(tmp);
+		rec.push_back(r);
+	}
+	Page pg = Page(rec, pgAddr);
+	pg.showPageInfo();
+	//cout<<"Post call";
+	fp.close();
+}
+
+void DiskFileMgr::buildPageFile()
+{
+	ifstream dbf;
+	ofstream pgf;
+	dbf.open("./database/dataFile.txt", ios::in);
+	pgf.open("./database/Pageinfo.txt", ios::out);
+	string toignore;
+	getline(dbf, toignore);
+	int pos=(toignore.length()+1), pid=0, psize=0;
+	pgf << pos << " " << pid << " ";
+	while(!dbf.eof()){
+		string r;
+		getline(dbf, r);
+		psize++;
+		pos+=(r.length()+1);
+		if(psize == pageLength)
+		{
+			pid++;
+			pgf << psize << "\n" << pos << " " << pid << " ";
+			psize=0;
+		}
+	}
+	pgf << (psize-1) << "\n";
+	dbf.close();
+	pgf.close();
 }

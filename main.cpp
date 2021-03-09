@@ -68,7 +68,7 @@ int main() {
 
 
 	cout<<"Indexed Search:\n\n";
-	Record r2 = DiskFileMgr::indexedSearch(904895, 0);
+	Record r2 = DiskFileMgr::indexedSearch(904898, 0);
 	if(r2.retLen() != 0)
 		cout<<r2.showRecord()<<endl;
 	else

@@ -61,7 +61,18 @@ int main() {
 	if(r.retLen() != 0)
 		cout<<r.showRecord()<<endl;
 	else
-		cout<<"Not found"<<endl;
+		cout<<"\nNot found"<<endl;
+
+
+	DiskFileMgr::buildIndexFile();
+
+
+	cout<<"Indexed Search:\n\n";
+	Record r2 = DiskFileMgr::indexedSearch(904895, 0);
+	if(r2.retLen() != 0)
+		cout<<r2.showRecord()<<endl;
+	else
+		cout<<"\nNot found"<<endl;
 
 	return 0;
 }

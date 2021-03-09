@@ -33,6 +33,17 @@ public:
 	bool chkKey(int key);
 
 	bool compareRecord(Record r);
+
+	int retKey(){
+		size_t pos = rec.find(',');
+		if(pos != string::npos)			//string::npos is -1 defined by std library
+		{
+			string id = rec.substr(0, pos);
+			int k = stoi(id);
+			return k;
+		}
+		return -1;
+	}
 };
 
 bool Record::compareRecord(Record r) {
@@ -42,13 +53,7 @@ bool Record::compareRecord(Record r) {
 
 bool Record::chkKey(int key)
 {
-	size_t pos = rec.find(',');
-	if(pos != string::npos)			//string::npos is -1 defined by std library
-	{
-		string id = rec.substr(0, pos);
-		int k = stoi(id);
-		if(k == key)
+	if(this->retKey() == key)
 			return true;
-	}
 	return false;
 }

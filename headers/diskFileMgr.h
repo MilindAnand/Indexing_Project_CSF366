@@ -16,13 +16,17 @@ public:
 
 	//static void searchTable(Table t);
 
-	static void retrievePage(int pgID, int pgSize);
+	static Page retrievePage(int pgID, int pgSize);
 
 	static void buildPageFile();
+
+	static void buildIndexFile();
 
 	static void showDB();
 
 	static Record linearSearch(int key, int TableNo);
+
+	static Record indexedSearch(int key, int TableNo);
 };
 
 void DiskFileMgr::writeTable(Table t) {
@@ -122,7 +126,7 @@ void DiskFileMgr::showDB() {
 	file_obj.close();
 }
 
-void DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)	//for now pgID is used, once I figure out how to store address of page and use it, probably from index file, this will need an edit// edit made
+Page DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)	//for now pgID is used, once I figure out how to store address of page and use it, probably from index file, this will need an edit// edit made
 {
 	ifstream fp;
 	fp.open("./database/dataFile.txt", ios::in);
@@ -145,9 +149,10 @@ void DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)	//for now pg
 		rec.push_back(r);
 	}
 	Page pg = Page(rec, pgAddr);
-	pg.showPageInfo();
+	//pg.showPageInfo();
 	//cout<<"Post call";
 	fp.close();
+	return pg;
 }
 
 void DiskFileMgr::buildPageFile()
@@ -182,12 +187,21 @@ Record DiskFileMgr::linearSearch(int key, int TableNo)
 {
 	ifstream tabf, dbf;
 	tabf.open("./database/Tableinfo.txt", ios::in);
-	while(TableNo--){
+	while(TableNo-- && !tabf.eof()){
 		string s;
 		getline(tabf, s);
+		if(s.length()==0)
+			break;
+		//cout<<"String: "<<s<<endl;
 	}
-	int SA, NR, spg, epg;
+	int SA=-1, NR=-1, spg, epg;
 	tabf >> SA >> NR >> spg >> epg;
+	if(TableNo != -1 || NR == -1)
+	{
+		cout<<"Invalid Table Number";
+		return Record("");
+	}
+	//cout<<SA<<" "<<NR<<endl;
 	dbf.open("./database/dataFile.txt", ios::in);
 	string rec;
 	while(NR--){
@@ -203,4 +217,91 @@ Record DiskFileMgr::linearSearch(int key, int TableNo)
 		}*/
 	}
 	return Record("");
+}
+
+void DiskFileMgr::buildIndexFile()
+{
+	//idea here is to store the index entries for each table on one line, with page number and id number separated by , as delimiter
+	ifstream tabf, pgf;
+	ofstream indf;
+	tabf.open("./database/Tableinfo.txt", ios::in);
+	pgf.open("./database/Pageinfo.txt", ios::in);
+	indf.open("./database/indexFile.txt", ios::out);
+	while(!tabf.eof())
+	{
+		int SA=-1, NR, spg, epg;
+		tabf >> SA >> NR >> spg >> epg;
+		if(SA == -1)
+			break;
+		int bck = spg;
+		while(bck--)
+		{
+			string s;
+			getline(pgf, s);		//skipping lines till appropriate line is reached
+		}
+		int pAddr, pId, pSize;
+		do{
+			pgf >> pAddr >> pId >> pSize;
+			Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
+			int k = pg.topInd();
+			indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
+		}while(pId != epg);
+		indf << "\n";
+	}
+	tabf.close();
+	pgf.close();
+	indf.close();
+}
+
+Record DiskFileMgr::indexedSearch(int key, int TableNo)
+{
+	ifstream tabf, indf, dbf;
+	tabf.open("./database/Tableinfo.txt", ios::in);
+	indf.open("./database/indexFile.txt", ios::in);
+	while(TableNo-- && !tabf.eof()){
+		string s, t;
+		getline(tabf, s);
+		getline(indf, t);
+		if(s.length()==0)
+			break;
+	}
+	int SA=-1, NR=-1, spg, epg;
+	tabf >> SA >> NR >> spg >> epg;
+	if(TableNo != -1 || NR == -1)
+	{
+		cout<<"Invalid Table Number";
+		return Record("");
+	}
+
+	int pgno=spg, pAddr=-1, pSize=-1;
+	do{
+		string s;
+		indf >> s;
+		size_t p1 = s.find(',');
+		size_t p2 = s.find(',', p1+1);
+		size_t p3 = s.find(',', p2+1);
+	
+		int addr = stoi(s.substr(p1+1, p2)), size = stoi(s.substr(p2+1, p3)), k = stoi(s.substr(p3+1, s.length()));
+	
+		if(k > key)
+		{
+			pgno--;
+			break;
+		}
+		pAddr = addr;
+		pSize = size;
+		pgno++;
+		
+		if (k==key)
+			break;
+	}while(pgno != epg);
+
+	if(pAddr==-1)
+	{
+		cout<<"Not Found\n";
+		return Record("");	
+	}
+	Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
+	Record res = pg.searchPage(key);
+	return res;
 }

@@ -30,6 +30,22 @@ public:
 		}
 	}
 
+	int topInd(){
+		return r[0].retKey();
+	}
+
+	Record searchPage(int key){
+		Record res = Record();
+		for (int i = 0; i < pageLength; ++i)
+		{
+			if(r[i].chkKey(key))
+			{
+				return r[i];
+			}
+		}
+		return res;
+	}
+
 	void setPageInfo() {
 
 	}

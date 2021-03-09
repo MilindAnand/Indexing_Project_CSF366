@@ -13,41 +13,55 @@ using namespace std;
 //Each table can have multiple pages and each page can have multiple tables
 
 int main() {
-	vector<Record> r, rec;
-	/*for(int i=0; i<5; i++) {
+	/*vector<Record> r, rec;
+	for(int i=0; i<100; i++) {
 		string s;
-		cin>>s;
+		getline(cin, s);
 		//cin.getline(s, recordSize);
 		r.push_back(Record(s));
 	}
-	Table t = Table(r, 10);
-	t.showTable();*/
+	Table t = Table(r);
+	DiskFileMgr::writeTable(t);*/
+	//t.showTable();
 	// cout<<t.compareTable(k)<<endl;
 	// cout<<s.compareTable(t)<<endl;
-	//DiskFileMgr::writeTable(t);
+
+	//cout<<endl<<endl;
+
 	DiskFileMgr::showDB();
 
 	/*cout<<"Page part:\n\n";
 	Page p = Page(r, 13);
 	p.showPageInfo();*/
 
-	cout<<"\n\nTrial for pages:\n\n";
+	//cout<<"\n\nTrial for pages:\n\n";
 	//DiskFileMgr::retrievePage(3, 3);
 
-	DiskFileMgr::buildPageFile();
+	//DiskFileMgr::buildPageFile();
 
 	//reading thru pageinfo file
-	ifstream pgf;
+	/*ifstream pgf;
 	pgf.open("./database/Pageinfo.txt", ios::in);
-	for (int i = 0; i < 4; ++i)
+	while(!pgf.eof())
 	{
 		int pAddr, pId, pSize;
 		pgf>>pAddr>>pId>>pSize;
 		//cout<<pAddr<<" "<<pId<<" "<<pSize<<"\n";
+		if (pSize==0)
+		{
+			break;
+		}
 		cout<<pId<<endl;
 		DiskFileMgr::retrievePage(pAddr, pSize);
 		cout<<endl<<endl;	
 	}
 	pgf.close();
+	*/
+	Record r = DiskFileMgr::linearSearch(904898, 0);
+	if(r.retLen() != 0)
+		cout<<r.showRecord()<<endl;
+	else
+		cout<<"Not found"<<endl;
+
 	return 0;
 }

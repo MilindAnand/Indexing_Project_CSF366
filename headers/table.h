@@ -11,9 +11,8 @@ public:
 
 	}
 
-	Table(vector<Record> r, int addr) {
+	Table(vector<Record> r) {
 		rows = r;
-		startAddr = addr;
 		numOfRows = r.size();
 	}
 
@@ -27,6 +26,10 @@ public:
 
 	Record retRec(int i){
 		return rows[i];
+	}
+
+	void setAddr(int addr){
+		startAddr = addr;
 	}
 
 	void setPgNo(int sp, int ep){

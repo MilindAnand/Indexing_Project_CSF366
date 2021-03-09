@@ -26,10 +26,29 @@ public:
 		rec = input;
 	}
 
+	int retLen(){
+		return rec.length();
+	}
+
+	bool chkKey(int key);
+
 	bool compareRecord(Record r);
 };
 
 bool Record::compareRecord(Record r) {
 	if(rec != r.rec) return false;
 	return true;
+}
+
+bool Record::chkKey(int key)
+{
+	size_t pos = rec.find(',');
+	if(pos != string::npos)			//string::npos is -1 defined by std library
+	{
+		string id = rec.substr(0, pos);
+		int k = stoi(id);
+		if(k == key)
+			return true;
+	}
+	return false;
 }

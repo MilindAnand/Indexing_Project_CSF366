@@ -15,7 +15,8 @@ public:
 	}
 
 	Record(string input) {
-		rec = input;
+		string buf(recordSize-input.length()-1, ' ');
+		rec = input+buf;
 	}
 
 	string showRecord() {
@@ -23,6 +24,7 @@ public:
 	}
 
 	void setRecord(string input) {
+
 		rec = input;
 	}
 
@@ -33,6 +35,13 @@ public:
 	bool chkKey(int key);
 
 	bool compareRecord(Record r);
+
+	bool chkEmp(){
+		if(rec == "" || rec[0] == ' ')
+			return true;
+		else
+			return false;
+	}
 
 	int retKey(){
 		size_t pos = rec.find(',');

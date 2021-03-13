@@ -13,16 +13,22 @@ using namespace std;
 //Each table can have multiple pages and each page can have multiple tables
 
 int main() {
-	/*vector<Record> r, rec;
-	for(int i=0; i<100; i++) {
+	vector<Record> r, rec;
+	for(int i=0; i<10; i++) {
 		string s;
 		getline(cin, s);
 		//cin.getline(s, recordSize);
 		r.push_back(Record(s));
+		cout<<i<<"\n";
 	}
+	cout<<"Building table";
 	Table t = Table(r);
-	DiskFileMgr::writeTable(t);*/
+	cout<<"Table built";
+	DiskFileMgr::writeTable(t);
+	cout<<"End of write table";
 	//t.showTable();
+	/*
+	*/
 	// cout<<t.compareTable(k)<<endl;
 	// cout<<s.compareTable(t)<<endl;
 
@@ -57,22 +63,30 @@ int main() {
 	}
 	pgf.close();
 	*/
-	Record r = DiskFileMgr::linearSearch(904898, 0);
-	if(r.retLen() != 0)
-		cout<<r.showRecord()<<endl;
+	cout<<"Enter pagebuild";
+	DiskFileMgr::buildPageFile();
+	cout<<"PageFile BUilt";
+	DiskFileMgr::buildIndexFile();
+
+	cout<<"linearSearch\n";
+	Record nlr = DiskFileMgr::linearSearch(193819, 0);
+	if(!nlr.chkEmp())
+		cout<<nlr.showRecord()<<endl;
 	else
 		cout<<"\nNot found"<<endl;
 
 
-	DiskFileMgr::buildIndexFile();
-
 
 	cout<<"Indexed Search:\n\n";
-	Record r2 = DiskFileMgr::indexedSearch(904898, 0);
-	if(r2.retLen() != 0)
+	Record r2 = DiskFileMgr::indexedSearch(193819, 0);
+	if(!r2.chkEmp())
 		cout<<r2.showRecord()<<endl;
 	else
 		cout<<"\nNot found"<<endl;
 
+	Record nrec("193819,New Record put here, NOTICE!!!");
+	DiskFileMgr::deleteRecord(193819, 0);
+	Record newrec("201882,Debra,Wood,F,10/30/1969,54,1991,84318,Blair,68009,dgwood");
+	DiskFileMgr::addRecord(0, newrec);
 	return 0;
 }

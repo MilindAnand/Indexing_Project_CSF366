@@ -314,7 +314,7 @@ cont DiskFileMgr::indexHelper(int key, int TableNo)
 	}while(pgno != epg+1);
 	result.pAdd = pAddr;
 	result.pSiz = pSize;
-	cout<<result.pAdd<<" "<<result.pSiz<<"\n";
+	//cout<<result.pAdd<<" "<<result.pSiz<<"\n";
 	return result;
 }
 
@@ -344,7 +344,7 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec)
 	fstream dbf;
 	dbf.open("./database/dataFile.txt", ios::in | ios::out);
 	dbf.seekg(pAddr, ios::beg);
-	int offset=1, flag=0;
+	int offset=0, flag=0;
 	while(pSize--){
 		string ts;
 		getline(dbf, ts);
@@ -358,15 +358,15 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec)
 		{
 			cout<<tr.retKey()<<endl;
 		}*/
-		offset += tr.retLen();
+		offset += (tr.retLen()+1);
 	}
 	if(!flag)
 	{
 		cout<<"Not Found";
 		return;
 	}
-	if(pAddr == 0 && offset==1)
-		offset=0;
+	/*if(pAddr == 0 && offset==1)
+		offset=0;*/
 	dbf.seekp(pAddr+offset, ios::beg);
 	dbf<<nrec.showRecord()<<"\n";
 }
@@ -398,6 +398,20 @@ void DiskFileMgr::deleteRecord(int key, int TableNo)
 	rename("./database/temp.txt", "./database/dataFile.txt");
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
+	fstream tabf;
+	tabf.open("./database/Tableinfo.txt", ios::in | ios::out);
+	int SA, NR, spg, epg, offset=0;
+	while(TableNo--){
+		getline(tabf, tmp);
+		offset+=tmp.length()+1;
+	}
+	tabf >> SA >> NR >> spg >> epg;
+	NR--;
+	if(NR%pageLength == 0)
+		epg--;
+	tabf.seekp(offset, ios::beg);
+	tabf << SA <<" " << NR << " " <<spg<<" "<<epg<<"\n";
+	tabf.close();
 }
 
 void DiskFileMgr::addRecord(int TableNo, Record nrec)
@@ -425,4 +439,18 @@ void DiskFileMgr::addRecord(int TableNo, Record nrec)
 	rename("./database/temp.txt", "./database/dataFile.txt");
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
+	fstream tabf;
+	tabf.open("./database/Tableinfo.txt", ios::in | ios::out);
+	int SA, NR, spg, epg, offset=0;
+	while(TableNo--){
+		getline(tabf, tmp);
+		offset+=tmp.length()+1;
+	}
+	tabf >> SA >> NR >> spg >> epg;
+	NR++;
+	if(NR%pageLength == 1)
+		epg++;
+	tabf.seekp(offset, ios::beg);
+	tabf<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<"\n";
+	tabf.close();
 }

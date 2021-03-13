@@ -13,80 +13,148 @@ using namespace std;
 //Each table can have multiple pages and each page can have multiple tables
 
 int main() {
-	vector<Record> r, rec;
-	for(int i=0; i<10; i++) {
-		string s;
-		getline(cin, s);
-		//cin.getline(s, recordSize);
-		r.push_back(Record(s));
-		cout<<i<<"\n";
-	}
-	cout<<"Building table";
-	Table t = Table(r);
-	cout<<"Table built";
-	DiskFileMgr::writeTable(t);
-	cout<<"End of write table";
-	//t.showTable();
-	/*
-	*/
-	// cout<<t.compareTable(k)<<endl;
-	// cout<<s.compareTable(t)<<endl;
-
-	//cout<<endl<<endl;
-
-	DiskFileMgr::showDB();
-
-	/*cout<<"Page part:\n\n";
-	Page p = Page(r, 13);
-	p.showPageInfo();*/
-
-	//cout<<"\n\nTrial for pages:\n\n";
-	//DiskFileMgr::retrievePage(3, 3);
-
-	//DiskFileMgr::buildPageFile();
-
-	//reading thru pageinfo file
-	/*ifstream pgf;
-	pgf.open("./database/Pageinfo.txt", ios::in);
-	while(!pgf.eof())
-	{
-		int pAddr, pId, pSize;
-		pgf>>pAddr>>pId>>pSize;
-		//cout<<pAddr<<" "<<pId<<" "<<pSize<<"\n";
-		if (pSize==0)
-		{
-			break;
+	int resp=1;
+	do{
+		cout<<"1. Show Database\n2. Linear Search\n3. Indexed Search\n4. Modify Record\n5. Delete Record\n6. Add Record\n0. Exit\n\nEnter Choice: ";
+		cin>>resp;
+		switch(resp){
+			case 1: {
+				DiskFileMgr::showDB();
+				break;
+			}
+			case 2: {
+				cout<<"Enter key: ";
+				int k;
+				cin>>k;
+				Record nlr = DiskFileMgr::linearSearch(k, 0);
+				if(!nlr.chkEmp())
+					cout<<nlr.showRecord()<<endl;
+				else
+					cout<<"\nNot found"<<endl;
+				break;
+			}
+			case 3: {
+				cout<<"Enter key: ";
+				int k;
+				cin>>k;
+				Record r2 = DiskFileMgr::indexedSearch(k, 0);
+				if(!r2.chkEmp())
+					cout<<r2.showRecord()<<endl;
+				else
+					cout<<"\nNot found"<<endl;
+				break;
+			}
+			case 4: {
+				int k;
+				cout<<"Enter key: ";
+				cin>>k;
+				string s;
+				cout<<"Enter record: ";
+				cin.ignore();
+				getline(cin, s);
+				// char buf;
+				// cin>>buf;
+				// if(s.length()!=0)
+				// 	k=1;
+				//cout<<"lala"<<s;
+				Record rec(s);
+				DiskFileMgr::modifyRecord(k, 0, rec);
+				break;
+			}
+			case 5: {
+				cout<<"Enter key: ";
+				int k;
+				cin>>k;
+				DiskFileMgr::deleteRecord(k, 0);
+				break;
+			}
+			case 6: {
+				cout<<"Enter record: ";
+				string s;
+				cin.ignore();
+				getline(cin, s);
+				Record rec(s);
+				DiskFileMgr::addRecord(0, rec);
+				break;
+			}
+			case 0: 
+			default: return 0;
 		}
-		cout<<pId<<endl;
-		DiskFileMgr::retrievePage(pAddr, pSize);
-		cout<<endl<<endl;	
-	}
-	pgf.close();
-	*/
-	cout<<"Enter pagebuild";
-	DiskFileMgr::buildPageFile();
-	cout<<"PageFile BUilt";
-	DiskFileMgr::buildIndexFile();
+	}while(resp!=0);
+	// vector<Record> r, rec;
+	// for(int i=0; i<10; i++) {
+	// 	string s;
+	// 	getline(cin, s);
+	// 	//cin.getline(s, recordSize);
+	// 	r.push_back(Record(s));
+	// 	cout<<i<<"\n";
+	// }
+	// cout<<"Building table";
+	// Table t = Table(r);
+	// cout<<"Table built";
+	// DiskFileMgr::writeTable(t);
+	// cout<<"End of write table";
+	// //t.showTable();
+	// /*
+	// */
+	// // cout<<t.compareTable(k)<<endl;
+	// // cout<<s.compareTable(t)<<endl;
 
-	cout<<"linearSearch\n";
-	Record nlr = DiskFileMgr::linearSearch(193819, 0);
-	if(!nlr.chkEmp())
-		cout<<nlr.showRecord()<<endl;
-	else
-		cout<<"\nNot found"<<endl;
+	// //cout<<endl<<endl;
+
+	// DiskFileMgr::showDB();
+
+	// /*cout<<"Page part:\n\n";
+	// Page p = Page(r, 13);
+	// p.showPageInfo();*/
+
+	// //cout<<"\n\nTrial for pages:\n\n";
+	// //DiskFileMgr::retrievePage(3, 3);
+
+	// //DiskFileMgr::buildPageFile();
+
+	// //reading thru pageinfo file
+	// ifstream pgf;
+	// pgf.open("./database/Pageinfo.txt", ios::in);
+	// while(!pgf.eof())
+	// {
+	// 	int pAddr, pId, pSize;
+	// 	pgf>>pAddr>>pId>>pSize;
+	// 	//cout<<pAddr<<" "<<pId<<" "<<pSize<<"\n";
+	// 	if (pSize==0)
+	// 	{
+	// 		break;
+	// 	}
+	// 	cout<<pId<<endl;
+	// 	DiskFileMgr::retrievePage(pAddr, pSize);
+	// 	cout<<endl<<endl;	
+	// }
+	// pgf.close();
+	
+	// cout<<"Enter pagebuild";
+	// DiskFileMgr::buildPageFile();
+	// cout<<"PageFile BUilt";
+	// DiskFileMgr::buildIndexFile();
+
+	// cout<<"linearSearch\n";
+	// Record nlr = DiskFileMgr::linearSearch(193819, 0);
+	// if(!nlr.chkEmp())
+	// 	cout<<nlr.showRecord()<<endl;
+	// else
+	// 	cout<<"\nNot found"<<endl;
 
 
 
-	cout<<"Indexed Search:\n\n";
-	Record r2 = DiskFileMgr::indexedSearch(193819, 0);
-	if(!r2.chkEmp())
-		cout<<r2.showRecord()<<endl;
-	else
-		cout<<"\nNot found"<<endl;
+	// cout<<"Indexed Search:\n\n";
+	// Record r2 = DiskFileMgr::indexedSearch(193819, 0);
+	// if(!r2.chkEmp())
+	// 	cout<<r2.showRecord()<<endl;
+	// else
+	// 	cout<<"\nNot found"<<endl;
 
-	Record nrec("193819,New Record put here, NOTICE!!!");
-	DiskFileMgr::deleteRecord(193819, 0);
-	Record newrec("201882,Debra,Wood,F,10/30/1969,54,1991,84318,Blair,68009,dgwood");
-	DiskFileMgr::addRecord(0, newrec);
+	// Record nrec("193819,New Record put here, NOTICE!!!");
+	// DiskFileMgr::deleteRecord(193819, 0);
+	// Record newrec("201882,Debra,Wood,F,10/30/1969,54,1991,84318,Blair,68009,dgwood");
+	// DiskFileMgr::addRecord(0, newrec);
 	return 0;
 }

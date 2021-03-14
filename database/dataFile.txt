@@ -7,4 +7,4 @@
 201882,Debra,Wood,F,10/30/1969,54,1991,84318,Blair,68009,dgwood                                                                                      
 212893,Janet,Henderson,F,12/24/1979,60,2012,114481,Miami,33166,jyhenderson                                                                           
 214352,Theresa,Lee,F,12-05-1992,59,2015,197537,Toeterville,50481,tglee                                                                               
-218791,Aaron,Price,M,02-10-1969,56,1997,54402,Eckerty,47116,anprice                                                                                  
+218791,Aaron,Price,M,02-10-1969,56,1997,54402,Eckerty,47116,anprice 

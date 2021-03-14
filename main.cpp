@@ -14,26 +14,6 @@ using namespace std;
 
 int main() {
 	vector<Record> r, rec;
-	for(int i=0; i<10; i++) {
-		string s;
-		getline(cin, s);
-		//cin.getline(s, recordSize);
-		r.push_back(Record(s));
-		cout<<i<<"\n";
-	}
-	cout<<"Building table";
-	Table t = Table(r);
-	cout<<"Table built";
-	DiskFileMgr::writeTable(t);
-	cout<<"End of write table";
-	//t.showTable();
-	/*
-	*/
-	// cout<<t.compareTable(k)<<endl;
-	// cout<<s.compareTable(t)<<endl;
-
-	//cout<<endl<<endl;
-
 	DiskFileMgr::showDB();
 
 	/*cout<<"Page part:\n\n";
@@ -63,30 +43,21 @@ int main() {
 	}
 	pgf.close();
 	*/
-	cout<<"Enter pagebuild";
+
+    //Test code to build PageFile and IndexFile
 	DiskFileMgr::buildPageFile();
-	cout<<"PageFile BUilt";
 	DiskFileMgr::buildIndexFile();
 
-	cout<<"linearSearch\n";
+    //Test code to search records linearly and by indexing
 	Record nlr = DiskFileMgr::linearSearch(193819, 0);
-	if(!nlr.chkEmp())
-		cout<<nlr.showRecord()<<endl;
-	else
-		cout<<"\nNot found"<<endl;
-
-
-
-	cout<<"Indexed Search:\n\n";
 	Record r2 = DiskFileMgr::indexedSearch(193819, 0);
-	if(!r2.chkEmp())
-		cout<<r2.showRecord()<<endl;
-	else
-		cout<<"\nNot found"<<endl;
-
-	Record nrec("193819,New Record put here, NOTICE!!!");
-	DiskFileMgr::deleteRecord(193819, 0);
-	Record newrec("201882,Debra,Wood,F,10/30/1969,54,1991,84318,Blair,68009,dgwood");
-	DiskFileMgr::addRecord(0, newrec);
-	return 0;
+	
+    //Test code for adding and deleting records
+    //Record nrec("193819,New Record put here, NOTICE!!!");
+    //DiskFileMgr::addRecord(0, nrec);
+    //DiskFileMgr::deleteRecord(193819, 0);
+	//Record newrec("201882,Debra,Wood,F,10/30/1969,54,1991,84318,Blair,68009,dgwood");
+	//DiskFileMgr::addRecord(0, newrec);
+	
+    return 0;
 }

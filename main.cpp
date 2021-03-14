@@ -15,7 +15,7 @@ using namespace std;
 int main() {
 	int resp=1;
 	do{
-		cout<<"1. Show Database\n2. Linear Search\n3. Indexed Search\n4. Modify Record\n5. Delete Record\n6. Add Record\n0. Exit\n\nEnter Choice: ";
+		cout<<"1. Show Database\n2. Linear Search\n3. Indexed Search\n4. Modify Record\n5. Delete Record\n6. Add Record\n7. Add Table\n0. Exit\n\nEnter Choice: ";
 		cin>>resp;
 		switch(resp){
 			case 1: {
@@ -24,9 +24,11 @@ int main() {
 			}
 			case 2: {
 				cout<<"Enter key: ";
-				int k;
+				int k, tno;
 				cin>>k;
-				Record nlr = DiskFileMgr::linearSearch(k, 0);
+				cout<<"Enter Table number: ";
+				cin>>tno;
+				Record nlr = DiskFileMgr::linearSearch(k, tno);
 				if(!nlr.chkEmp())
 					cout<<nlr.showRecord()<<endl;
 				else
@@ -35,9 +37,11 @@ int main() {
 			}
 			case 3: {
 				cout<<"Enter key: ";
-				int k;
+				int k, tno;
 				cin>>k;
-				Record r2 = DiskFileMgr::indexedSearch(k, 0);
+				cout<<"Enter Table number: ";
+				cin>>tno;
+				Record r2 = DiskFileMgr::indexedSearch(k, tno);
 				if(!r2.chkEmp())
 					cout<<r2.showRecord()<<endl;
 				else
@@ -45,9 +49,11 @@ int main() {
 				break;
 			}
 			case 4: {
-				int k;
+				int k, tno;
 				cout<<"Enter key: ";
 				cin>>k;
+				cout<<"Enter Table number: ";
+				cin>>tno;
 				string s;
 				cout<<"Enter record: ";
 				cin.ignore();
@@ -58,23 +64,46 @@ int main() {
 				// 	k=1;
 				//cout<<"lala"<<s;
 				Record rec(s);
-				DiskFileMgr::modifyRecord(k, 0, rec);
+				DiskFileMgr::modifyRecord(k, tno, rec);
 				break;
 			}
 			case 5: {
+				int k, tno;
 				cout<<"Enter key: ";
-				int k;
 				cin>>k;
-				DiskFileMgr::deleteRecord(k, 0);
+				cout<<"Enter Table number: ";
+				cin>>tno;
+				DiskFileMgr::deleteRecord(k, tno);
 				break;
 			}
 			case 6: {
+				int tno;
+				cout<<"Enter Table number: ";
+				cin>>tno;
 				cout<<"Enter record: ";
 				string s;
 				cin.ignore();
 				getline(cin, s);
 				Record rec(s);
-				DiskFileMgr::addRecord(0, rec);
+				DiskFileMgr::addRecord(tno, rec);
+				break;
+			}
+			case 7: {
+				vector<Record> r;
+				int NR;
+				cout<<"Enter number of rows: ";
+				cin>>NR;
+				cout<<"Enter rows:\n";
+				cin.ignore();
+				for (int i = 0; i < NR; ++i)
+				{
+					string s;
+					getline(cin, s);
+					//cout<<s<<endl;
+					r.push_back(Record(s));
+				}
+				Table T = Table(r);
+				DiskFileMgr::writeTable(T);
 				break;
 			}
 			case 0: 

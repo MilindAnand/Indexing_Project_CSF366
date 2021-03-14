@@ -4,7 +4,17 @@
 162402,Diana,Peterson,F,11/13/1987,60,2014,43010,Eureka Springs,72632,dtpeterson                                                                     
 183071,Andrea,Garcia,F,07-06-1985,52,2010,54179,Granger,46530,apgarcia                                                                               
 185032,Eugene,Perez,M,10-06-1979,59,2014,122950,Racine,53490,edperez                                                                                 
-201882,Debra,Wood,F,10/30/1969,54,1991,84318,Blair,68009,dgwood                                                                                      
-212893,Alan,Rivera,M,12-11-1978,80,2006,154810,Knoxville,37901,aerivera                                                                              
+193819,Benjamin,Russell,M,4/17/1977,58,2013,117642,Fremont,54940,brrussell                                                                           
+212459,randomdata                                                                                                                                    
+212893,Janet,Henderson,F,12/24/1979,60,2012,114481,Miami,33166,jyhenderson                                                                           
 214352,Theresa,Lee,F,12-05-1992,59,2015,197537,Toeterville,50481,tglee                                                                               
-218791,Aaron,Price,M,02-10-1969,56,1997,54402,Eckerty,47116,anprice 
+218791,Aaron,Price,M,02-10-1969,56,1997,54402,Eckerty,47116,anprice                                                                                  
+225925,Paul,Cooper,M,08-12-1991,68,2014,73526,Glidden,78943,pdcooper                                                                                 
+226714,Nancy,Davis,F,11/14/1983,52,2012,94986,Bowling Green,47833,nldavis                                                                            
+227922,Amanda,Hughes,F,7/29/1982,40,2007,114257,Lake Charles,70605,amhughes                                                                          
+231469,Ralph,Flores,M,02-05-1975,80,2009,118457,Sabetha,66534,rlflores                                                                               
+241882,Debra,Wood,F,10/30/1969,54,1991,84318,Blair,68009,dgwood                                                                                      
+247137,Alan,Rivera,M,12-11-1978,80,2006,154810,Knoxville,37901,aerivera                                                                              
+253573,Sharon,Lopez,F,05-04-1991,43,2014,190139,Bartley,24813,selopez                                                                                
+263480,Daniel,Cooper,M,01-01-1990,60,2014,153790,Manning,58642,dkcooper                                                                              
+265813,Jack,Campbell,M,01-04-1985,50,2007,186280,Kalvesta,67856,jecampbell                                                                           

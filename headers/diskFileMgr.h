@@ -1,15 +1,26 @@
 #include<bits/stdc++.h>
 using namespace std;
-using namespace std::chrono;
 
-struct container {
+struct container
+{
 	int pAdd, pSiz;
 };
 typedef struct container cont;
 
 class DiskFileMgr {
+private:
 public:
 	static void writeTable(Table t); //function to add table to dataFile
+
+	static void deleteTable(Table t) {
+		//function to delete table from dataFile
+	}
+
+	static void modifyTable() {
+		//function to modify records in particular table
+	}
+
+	//static void searchTable(Table t);
 
 	static Page retrievePage(int pgID, int pgSize);
 
@@ -65,24 +76,69 @@ void DiskFileMgr::writeTable(Table t) {
 	tabf << SA << " " << NR << " " << stpg << " " << endpg << "\n";
 	pgf.close();
 	tabf.close();
+	DiskFileMgr::buildPageFile();
+	DiskFileMgr::buildIndexFile();
 	//suggestion for future, maybe build a table info file as well, like page info, might be useful for multiple tables in database
 }
 
+// void DiskFileMgr::searchTable(Table t) {
+// 	ifstream file_obj;
+// 	Table ptr;
+// 	file_obj.open("./database/dataFile.txt", ios::in);
+// 	file_obj.read((char*)&ptr, sizeof(ptr));
+// 	while(!file_obj.eof()) {
+// 		if(t.compareTable(ptr)) {
+// 			cout<<"Table found successfully\n";
+// 			file_obj.close();
+// 			return;
+// 		}
+// 		file_obj.read((char*)&ptr, sizeof(ptr));
+// 	}
+// 	cout<<"Table not found in database\n";
+// 	file_obj.close();
+// 	return;
+// }
+
 void DiskFileMgr::showDB() {
 	ifstream file_obj;
+	//Table ptr;
+	//vector<Record> rec;
 	bool empty = true;
-    int ctr = 0;
 	file_obj.open("./database/dataFile.txt", ios::in);
-    string str;
-	while(getline(file_obj, str)) {
+	/*int SA=-1, NR=-1;	
+	file_obj >> SA;
+	file_obj >> NR;
+	char buf[2];
+	file_obj.getline(buf, 1);
+	if(SA==-1 && NR==-1) 
+	{
+		cout<<"Empty database\n";
+	}
+	else
+	{
+		cout<<"SA: "<<SA<<"\nNR: "<<NR<<endl;
+		
+		for (int i = 0; i < NR; ++i)
+		{
+			char tmp[recordSize];
+			file_obj.getline(tmp, recordSize);
+			Record r = Record(tmp);
+			rec.push_back(r);
+		}
+		ptr = Table(rec);
+		ptr.showTable();
+	}*/
+	while(!file_obj.eof())
+	{
 		empty = false;
-		cout<<"RECORD "<<ctr<<" : "<<str<<endl;
-        ctr++;
+		string str;
+		getline(file_obj, str);
+		cout<<str<<endl;
 	}
-	if(empty) {
-		cout<<"EMPTY DATABASE\n";	
+	if(empty){
+		cout<<"Empty database\n";	
 	}
-    cout<<"TOTAL "<<ctr<<" ROW(S) FETCHED\n";
+	//add something for number of rows as well
 	file_obj.close();
 }
 
@@ -100,8 +156,8 @@ Page DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)	//for now pg
 
 	fp.seekg(pgAddr, ios::cur);
 	//cout<<"Pre loop";
-	for (int i = 0; i < pgSize; ++i)						//Need to change this from pageLength to length of  
-    {
+	for (int i = 0; i < pgSize; ++i)						//Need to change this from pageLength to length of 
+	{
 		char tmp[recordSize];
 		fp.getline(tmp, recordSize);
 		//cout<<tmp<<endl;
@@ -115,19 +171,23 @@ Page DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)	//for now pg
 	return pg;
 }
 
-void DiskFileMgr::buildPageFile() {
-    cout<<"BUILDING PAGE INFO...\n";
+void DiskFileMgr::buildPageFile()
+{
 	ifstream dbf;
 	ofstream pgf;
 	dbf.open("./database/dataFile.txt", ios::in);
 	pgf.open("./database/Pageinfo.txt", ios::out);
+	/*string toignore;
+	getline(dbf, toignore);*/
 	int pos=0, pid=0, psize=0;
 	pgf << pos << " " << pid << " ";
-    string r;
-	while(getline(dbf, r)) {
+	while(!dbf.eof()){
+		string r;
+		getline(dbf, r);
 		psize++;
 		pos+=(r.length()+1);
-		if(psize == pageLength && !dbf.eof()) {
+		if(psize == pageLength && !dbf.eof())
+		{
 			pid++;
 			pgf << psize << "\n" << pos << " " << pid << " ";
 			psize=0;
@@ -137,70 +197,69 @@ void DiskFileMgr::buildPageFile() {
 	pgf << (psize-1) << "\n";
 	dbf.close();
 	pgf.close();
-    cout<<"PAGE INFO BUILT SUCCESSFULLY\n";
 }
 
-Record DiskFileMgr::linearSearch(int key, int TableNo) {
+Record DiskFileMgr::linearSearch(int key, int TableNo)
+{
 	ifstream tabf, dbf;
-	int SA=-1, NR=-1, spg, epg;
-	string rec;
 	tabf.open("./database/Tableinfo.txt", ios::in);
-	dbf.open("./database/dataFile.txt", ios::in);
-    time_point<system_clock> start, end; 
-    start = system_clock::now();
-    while(TableNo-- && !tabf.eof()) {
+	while(TableNo-- && !tabf.eof()){
 		string s;
 		getline(tabf, s);
 		if(s.length()==0)
 			break;
+		//cout<<"String: "<<s<<endl;
 	}
+	int SA=-1, NR=-1, spg, epg;
 	tabf >> SA >> NR >> spg >> epg;
-	if(TableNo != -1 || NR == -1) {
-		cout<<"LINEAR SEARCH : INVALID TABLE NUMBER\n";
+	if(TableNo != -1 || NR == -1)
+	{
+		cout<<"Invalid Table Number";
 		return Record("");
 	}
-	while(NR--) {
+	//cout<<SA<<" "<<NR<<endl;
+	dbf.open("./database/dataFile.txt", ios::in);
+	string rec;
+	dbf.seekg(SA, ios::beg);
+	while(NR--){
 		getline(dbf, rec);
 		Record res = Record(rec);
-		if(res.chkKey(key)) {
-            cout<<"LINEAR SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
-            end = system_clock::now(); 
-            duration<double> elapsed_seconds = end - start;
-            cout<<"LINEAR TIME TAKEN : "<<elapsed_seconds.count()<<endl;
-            tabf.close();
-            dbf.close();
+		if(res.chkKey(key))
+		{
 			return res;
 		}
+		/*else
+		{
+			cout<<NR<<" "<<key<<" "<<rec<<endl;
+		}*/
 	}
-    cout<<"LINEAR SEARCH : RECORD "<<key<<" NOT FOUND\n";
-    end = system_clock::now();
-    duration<double> elapsed_seconds = end - start;
-    cout<<"LINEAR TIME TAKEN : "<<elapsed_seconds.count()<<endl;
-    tabf.close();
-    dbf.close();
 	return Record("");
 }
 
-void DiskFileMgr::buildIndexFile() {
+void DiskFileMgr::buildIndexFile()
+{
 	//idea here is to store the index entries for each table on one line, with page number and id number separated by , as delimiter
-	cout<<"BUILDING INDEX FILE...\n";
-    ifstream tabf, pgf;
+	ifstream tabf, pgf;
 	ofstream indf;
 	tabf.open("./database/Tableinfo.txt", ios::in);
 	pgf.open("./database/Pageinfo.txt", ios::in);
 	indf.open("./database/indexFile.txt", ios::out);
-	while(!tabf.eof()) {
+	while(!tabf.eof())
+	{
 		int SA=-1, NR, spg, epg;
 		tabf >> SA >> NR >> spg >> epg;
-		if(SA == -1) break;
-		int bck = spg;
-		while(bck--) {
+		if(SA == -1)
+			break;
+		int bck = spg-1;
+		while(spg && bck--)
+		{
 			string s;
 			getline(pgf, s);		//skipping lines till appropriate line is reached
 		}
 		int pAddr, pId, pSize;
-		do {
+		do{
 			pgf >> pAddr >> pId >> pSize;
+			cout<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<" "<<pAddr<<" "<<" "<<pId<<" "<<pSize<<endl;
 			Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
 			int k = pg.topInd();
 			indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
@@ -210,17 +269,17 @@ void DiskFileMgr::buildIndexFile() {
 	tabf.close();
 	pgf.close();
 	indf.close();
-    cout<<"INDEX FILE BUILT SUCCESSFULLY\n";
 }
 
-cont DiskFileMgr::indexHelper(int key, int TableNo) {
+cont DiskFileMgr::indexHelper(int key, int TableNo)
+{
 	ifstream tabf, indf, dbf;
 	tabf.open("./database/Tableinfo.txt", ios::in);
 	indf.open("./database/indexFile.txt", ios::in);
 	cont result;
 	result.pAdd = -1;
 	result.pSiz = -1;
-	while(TableNo-- && !tabf.eof()) {
+	while(TableNo-- && !tabf.eof()){
 		string s, t;
 		getline(tabf, s);
 		getline(indf, t);
@@ -229,15 +288,13 @@ cont DiskFileMgr::indexHelper(int key, int TableNo) {
 	}
 	int SA=-1, NR=-1, spg, epg;
 	tabf >> SA >> NR >> spg >> epg;
-	if(TableNo != -1 || NR == -1) {
-		cout<<"INVALID TABLE NUMBER\n";
-        tabf.close();
-        indf.close();
+	if(TableNo != -1 || NR == -1)
+	{
+		cout<<"Invalid Table Number";
 		return result;
 	}
-
 	int pgno=spg, pAddr=-1, pSize=-1;
-	do {
+	do{
 		string s;
 		indf >> s;
 		size_t p1 = s.find(',');
@@ -246,7 +303,8 @@ cont DiskFileMgr::indexHelper(int key, int TableNo) {
 	
 		int addr = stoi(s.substr(p1+1, p2)), size = stoi(s.substr(p2+1, p3)), k = stoi(s.substr(p3+1, s.length()));
 	
-		if(k > key) {
+		if(k > key)
+		{
 			pgno--;
 			break;
 		}
@@ -259,40 +317,33 @@ cont DiskFileMgr::indexHelper(int key, int TableNo) {
 	}while(pgno != epg+1);
 	result.pAdd = pAddr;
 	result.pSiz = pSize;
-	cout<<result.pAdd<<" "<<result.pSiz<<"\n";
-	tabf.close();
-    indf.close();
-    return result;
+	//cout<<result.pAdd<<" "<<result.pSiz<<"\n";
+	return result;
 }
 
-Record DiskFileMgr::indexedSearch(int key, int TableNo) {
-	//auto index_start = high_resolution_clock::now();
-    time_point<system_clock> start, end;
-    start = system_clock::now();
-    cont ct = DiskFileMgr::indexHelper(key, TableNo);
-	int pAddr = ct.pAdd, pSize = ct.pSiz;
-	if(pAddr==-1) {
-		cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";
-		return Record("");	
-	}
-	Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
-	Record res = pg.searchPage(key);
-    //auto index_end = high_resolution_clock::now();
-    end = system_clock::now();
-    duration<double> elapsed_seconds = end - start; 
-    if(res.chkEmp() == false)
-        cout<<"INDEXED SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
-    else cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";
-    //auto duration = duration_cast<microseconds>(index_end - index_start);
-    cout<<"INDEXED TIME TAKEN : "<<elapsed_seconds.count()<<endl;
-    return res;
-}
-
-void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec) {
+Record DiskFileMgr::indexedSearch(int key, int TableNo)
+{
 	cont ct = DiskFileMgr::indexHelper(key, TableNo);
 	int pAddr = ct.pAdd, pSize = ct.pSiz;
-	if(pAddr==-1) {
-		cout<<"MODIFY RECORD : RECORD "<<key<<" NOT FOUND\n";
+	if(pAddr==-1)
+	{
+		cout<<"Not Found\n";
+		return Record("");	
+	}
+	// dbf.seekg(SA, ios::beg);
+	cout<<pAddr<<" "<<pSize<<endl;
+	Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
+	Record res = pg.searchPage(key);
+	return res;
+}
+
+void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec)
+{
+	cont ct = DiskFileMgr::indexHelper(key, TableNo);
+	int pAddr = ct.pAdd, pSize = ct.pSiz;
+	if(pAddr==-1)
+	{
+		cout<<"Not Found\n";
 		return;
 	}
 	fstream dbf;
@@ -303,7 +354,8 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec) {
 		string ts;
 		getline(dbf, ts);
 		Record tr(ts);
-		if(key == tr.retKey()) {	
+		if(key == tr.retKey())
+		{	
 			flag=1;
 			break;
 		}
@@ -313,22 +365,23 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec) {
 		}*/
 		offset += (tr.retLen()+1);
 	}
-	if(!flag) {
-		cout<<"MODIFY RECORD : RECORD "<<key<<" NOT FOUND\n";
-        dbf.close();
+	if(!flag)
+	{
+		cout<<"Not Found";
 		return;
 	}
 	/*if(pAddr == 0 && offset==1)
 		offset=0;*/
 	dbf.seekp(pAddr+offset, ios::beg);
 	dbf<<nrec.showRecord()<<"\n";
-    dbf.close();
 }
 
-void DiskFileMgr::deleteRecord(int key, int TableNo) {
+void DiskFileMgr::deleteRecord(int key, int TableNo)
+{
 	Record drec = DiskFileMgr::indexedSearch(key, TableNo);
-	if(drec.chkEmp()) {
-		cout<<"DELETE RECORD : RECORD "<<key<<" NOT FOUND"<<endl;
+	if(drec.chkEmp())
+	{
+		cout<<"\nNot found"<<endl;
 		return;
 	}
 	ifstream dbf;
@@ -336,7 +389,8 @@ void DiskFileMgr::deleteRecord(int key, int TableNo) {
 	dbf.open("./database/dataFile.txt", ios::in);
 	tmpf.open("./database/temp.txt", ios::out);
 	string tmp;
-	while(getline(dbf, tmp)) {
+	while(getline(dbf, tmp))
+	{
 		Record t(tmp);
 		if(drec.compareRecord(t))
 			continue;
@@ -349,7 +403,7 @@ void DiskFileMgr::deleteRecord(int key, int TableNo) {
 	rename("./database/temp.txt", "./database/dataFile.txt");
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
-   fstream tabf;
+	fstream tabf;
 	tabf.open("./database/Tableinfo.txt", ios::in | ios::out);
 	int SA, NR, spg, epg, offset=0;
 	while(TableNo--){
@@ -363,10 +417,10 @@ void DiskFileMgr::deleteRecord(int key, int TableNo) {
 	tabf.seekp(offset, ios::beg);
 	tabf << SA <<" " << NR << " " <<spg<<" "<<epg<<"\n";
 	tabf.close();
-   cout<<"RECORD "<<key<<" DELETED SUCCESSFULLY\n";
 }
 
-void DiskFileMgr::addRecord(int TableNo, Record nrec) {
+void DiskFileMgr::addRecord(int TableNo, Record nrec)
+{
 	ifstream dbf;
 	ofstream tmpf;
 	dbf.open("./database/dataFile.txt", ios::in);
@@ -374,9 +428,11 @@ void DiskFileMgr::addRecord(int TableNo, Record nrec) {
 	int newkey = nrec.retKey();
 	string tmp;
 	bool flag=true;
-	while(getline(dbf, tmp)) {
+	while(getline(dbf, tmp))
+	{
 		Record t(tmp);
-		if(flag && newkey < t.retKey()) {
+		if(flag && newkey < t.retKey())
+		{
 			tmpf<<nrec.showRecord()<<"\n";
 			flag = false;
 		}
@@ -403,4 +459,3 @@ void DiskFileMgr::addRecord(int TableNo, Record nrec) {
 	tabf<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<"\n";
 	tabf.close();
 }
-

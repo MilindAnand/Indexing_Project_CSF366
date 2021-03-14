@@ -280,12 +280,11 @@ Record DiskFileMgr::indexedSearch(int key, int TableNo) {
     //auto index_end = high_resolution_clock::now();
     end = system_clock::now();
     duration<double> elapsed_seconds = end - start; 
-    if(!res.chkEmp())
+    if(res.chkEmp() == false)
         cout<<"INDEXED SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
-    else
-		cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";
+    else cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";
     //auto duration = duration_cast<microseconds>(index_end - index_start);
-    cout<<"INDEXED TIME : "<<elapsed_seconds.count()<<endl;
+    cout<<"INDEXED TIME TAKEN : "<<elapsed_seconds.count()<<endl;
     return res;
 }
 
@@ -299,8 +298,8 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec) {
 	fstream dbf;
 	dbf.open("./database/dataFile.txt", ios::in | ios::out);
 	dbf.seekg(pAddr, ios::beg);
-	int offset=1, flag=0;
-	while(pSize--) { 
+	int offset=0, flag=0;
+	while(pSize--){
 		string ts;
 		getline(dbf, ts);
 		Record tr(ts);
@@ -312,15 +311,15 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec) {
 		{
 			cout<<tr.retKey()<<endl;
 		}*/
-		offset += tr.retLen();
+		offset += (tr.retLen()+1);
 	}
 	if(!flag) {
 		cout<<"MODIFY RECORD : RECORD "<<key<<" NOT FOUND\n";
         dbf.close();
 		return;
 	}
-	if(pAddr == 0 && offset==1)
-		offset=0;
+	/*if(pAddr == 0 && offset==1)
+		offset=0;*/
 	dbf.seekp(pAddr+offset, ios::beg);
 	dbf<<nrec.showRecord()<<"\n";
     dbf.close();
@@ -350,7 +349,21 @@ void DiskFileMgr::deleteRecord(int key, int TableNo) {
 	rename("./database/temp.txt", "./database/dataFile.txt");
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
-    cout<<"RECORD "<<key<<" DELETED SUCCESSFULLY\n";
+    	fstream tabf;
+	tabf.open("./database/Tableinfo.txt", ios::in | ios::out);
+	int SA, NR, spg, epg, offset=0;
+	while(TableNo--){
+		getline(tabf, tmp);
+		offset+=tmp.length()+1;
+	}
+	tabf >> SA >> NR >> spg >> epg;
+	NR--;
+	if(NR%pageLength == 0)
+		epg--;
+	tabf.seekp(offset, ios::beg);
+	tabf << SA <<" " << NR << " " <<spg<<" "<<epg<<"\n";
+	tabf.close();
+    	cout<<"RECORD "<<key<<" DELETED SUCCESSFULLY\n";
 }
 
 void DiskFileMgr::addRecord(int TableNo, Record nrec) {
@@ -375,4 +388,18 @@ void DiskFileMgr::addRecord(int TableNo, Record nrec) {
 	rename("./database/temp.txt", "./database/dataFile.txt");
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
+	fstream tabf;
+	tabf.open("./database/Tableinfo.txt", ios::in | ios::out);
+	int SA, NR, spg, epg, offset=0;
+	while(TableNo--){
+		getline(tabf, tmp);
+		offset+=tmp.length()+1;
+	}
+	tabf >> SA >> NR >> spg >> epg;
+	NR++;
+	if(NR%pageLength == 1)
+		epg++;
+	tabf.seekp(offset, ios::beg);
+	tabf<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<"\n";
+	tabf.close();
 }

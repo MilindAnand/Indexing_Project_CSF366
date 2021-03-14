@@ -349,7 +349,7 @@ void DiskFileMgr::deleteRecord(int key, int TableNo) {
 	rename("./database/temp.txt", "./database/dataFile.txt");
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
-    	fstream tabf;
+   fstream tabf;
 	tabf.open("./database/Tableinfo.txt", ios::in | ios::out);
 	int SA, NR, spg, epg, offset=0;
 	while(TableNo--){
@@ -363,7 +363,7 @@ void DiskFileMgr::deleteRecord(int key, int TableNo) {
 	tabf.seekp(offset, ios::beg);
 	tabf << SA <<" " << NR << " " <<spg<<" "<<epg<<"\n";
 	tabf.close();
-    	cout<<"RECORD "<<key<<" DELETED SUCCESSFULLY\n";
+   cout<<"RECORD "<<key<<" DELETED SUCCESSFULLY\n";
 }
 
 void DiskFileMgr::addRecord(int TableNo, Record nrec) {
@@ -403,3 +403,4 @@ void DiskFileMgr::addRecord(int TableNo, Record nrec) {
 	tabf<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<"\n";
 	tabf.close();
 }
+

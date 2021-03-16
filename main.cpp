@@ -1,4 +1,4 @@
-#define pageLength 5 //The page length is currently fixed to 5 records 
+#define pageLength 50 //The page length is currently fixed to 5 records 
 
 #include<bits/stdc++.h>
 
@@ -15,7 +15,7 @@ using namespace std;
 int main() {
 	int resp=1;
 	do{
-		cout<<"1. Show Database\n2. Linear Search\n3. Indexed Search\n4. Modify Record\n5. Delete Record\n6. Add Record\n7. Add Table\n0. Exit\n\nEnter Choice: ";
+		cout<<"1. Show Database\n2. Linear Search\n3. Indexed Search\n4. Modify Record\n5. Delete Record\n6. Add Record\n7. Add Table\n8. Naive Linear Search\n0. Exit\n\nEnter Choice: ";
 		cin>>resp;
 		switch(resp){
 			case 1: {
@@ -104,6 +104,19 @@ int main() {
 				}
 				Table T = Table(r);
 				DiskFileMgr::writeTable(T);
+				break;
+			}
+			case 8: {
+				cout<<"Enter key: ";
+				int k, tno;
+				cin>>k;
+				cout<<"Enter Table number: ";
+				cin>>tno;
+				Record nlr = DiskFileMgr::naivelinearSearch(k, tno);
+				if(!nlr.chkEmp())
+					cout<<nlr.showRecord()<<endl;
+				else
+					cout<<"\nNot found"<<endl;
 				break;
 			}
 			case 0: 

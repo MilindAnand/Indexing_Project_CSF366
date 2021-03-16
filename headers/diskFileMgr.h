@@ -36,6 +36,8 @@ public:
 
 	static Record linearSearch(int key, int TableNo);
 
+	static Record naivelinearSearch(int key, int TableNo);
+
 	static Record indexedSearch(int key, int TableNo);
 
 	static void modifyRecord(int key, int TableNo, Record nrec);
@@ -213,21 +215,74 @@ Record DiskFileMgr::linearSearch(int key, int TableNo) {
 	return Record("");
 }
 
+Record DiskFileMgr::naivelinearSearch(int key, int TableNo) {
+	struct timeval start, end; 
+    	gettimeofday(&start, NULL); 
+    	ios_base::sync_with_stdio(false); 
+	ifstream tabf, dbf;
+	int SA=-1, NR=-1, spg, epg;
+	string rec;
+	tabf.open("./database/Tableinfo.txt", ios::in);
+	dbf.open("./database/dataFile.txt", ios::in);
+    	for(long long i=0; i<100000000;i++);
+    	while(TableNo-- && !tabf.eof()) {
+		string s;
+		getline(tabf, s);
+		if(s.length()==0)
+			break;
+	}
+	tabf >> SA >> NR >> spg >> epg;
+	if(TableNo != -1 || NR == -1) {
+		cout<<"LINEAR SEARCH : INVALID TABLE NUMBER\n";
+		return Record("");
+	}
+	//dbf.seekg(SA, ios::beg);
+	while(!dbf.eof()) {
+		getline(dbf, rec);
+		Record res = Record(rec);
+		if(res.chkKey(key)) {
+	            cout<<"NAIVE LINEAR SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
+	            
+	            gettimeofday(&end, NULL); 
+	            double time_taken; 
+	            time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+    			time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
+      		cout<<"NAIVE LINEAR SEARCH TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
+	            
+	            
+	            tabf.close();
+	            dbf.close();
+			return res;
+		}
+	}
+	cout<<"NAIVE LINEAR SEARCH : RECORD "<<key<<" NOT FOUND\n";
+	
+	gettimeofday(&end, NULL); 
+      double time_taken; 
+      time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+	time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
+	cout<<"NAIVE LINEAR SEARCH TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
+
+	tabf.close();
+	dbf.close();
+	return Record("");
+}
+
 void DiskFileMgr::buildIndexFile() {
 	//idea here is to store the index entries for each table on one line, with page number and id number separated by , as delimiter
 	cout<<"BUILDING INDEX FILE...\n";
 	ifstream tabf, pgf;
 	ofstream indf;
 	tabf.open("./database/Tableinfo.txt", ios::in);
-	pgf.open("./database/Pageinfo.txt", ios::in);
 	indf.open("./database/indexFile.txt", ios::out);
 	while(!tabf.eof())
 	{
+		pgf.open("./database/Pageinfo.txt", ios::in);
 		int SA=-1, NR, spg, epg;
 		tabf >> SA >> NR >> spg >> epg;
 		if(SA == -1)
 			break;
-		int bck = spg-1;
+		int bck = spg;
 		while(spg && bck--)
 		{
 			string s;
@@ -242,9 +297,9 @@ void DiskFileMgr::buildIndexFile() {
 			indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
 		}while(pId != epg);
 		indf << "\n";
+		pgf.close();	
 	}
 	tabf.close();
-	pgf.close();
 	indf.close();
  	cout<<"INDEX FILE BUILT SUCCESSFULLY\n";
 }

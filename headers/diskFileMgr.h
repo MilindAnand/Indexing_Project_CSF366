@@ -303,30 +303,32 @@ void DiskFileMgr::buildIndexFile() {
 
 int DiskFileMgr::binSrc(int left, int right, vector<Page> vpg, int &numAccs, int srckey)
 {
-	int mid = left + (right-left)/2;
-	//cout<<left<<" "<<mid<<" "<<right<<"\n";
-	if(mid==right)
+	while(left<=right)
 	{
-		numAccs++;
-		return right;
+		int mid = left + (right-left)/2;
+		//cout<<left<<" "<<mid<<" "<<right<<"\n";
+		if(mid==right)
+		{
+			numAccs++;
+			return right;
+		}
+		if(vpg[mid].topInd() <= srckey && srckey < vpg[mid+1].topInd())
+		{
+			numAccs++;
+			return mid;
+		}
+		else if(vpg[mid].topInd() > srckey)
+		{
+			numAccs++;
+			right = mid-1;
+		}
+		else
+		{
+			numAccs++;
+			left = mid+1;
+		}
 	}
-	if(vpg[mid].topInd() <= srckey && srckey < vpg[mid+1].topInd())
-	{
-		numAccs++;
-		return mid;
-	}
-	else if(vpg[mid].topInd() > srckey)
-	{
-		numAccs++;
-		binSrc(left, mid-1, vpg, numAccs, srckey);
-	}
-	else
-	{
-		numAccs++;
-		binSrc(mid+1, right, vpg, numAccs, srckey);
-	}
-
-	return right;
+	return -1;
 }
 
 cont DiskFileMgr::indexHelper(int key, int TableNo) {
@@ -335,11 +337,12 @@ cont DiskFileMgr::indexHelper(int key, int TableNo) {
 	result.pSiz = -1;
     vector<Page> vpg = DiskFileMgr::getTablePages(TableNo);
     int numAccs=2, left=0, right=vpg.size()-1;
-    Page pg = vpg[DiskFileMgr::binSrc(left, right, vpg, numAccs, key)];
+    int ind = DiskFileMgr::binSrc(left, right, vpg, numAccs, key);
+    Page pg = vpg[ind];
     result.pAdd = pg.getAddr();
     result.pSiz = pg.getSize();
     result.blkAccs = numAccs;
-	return result;
+    return result;
 }
 
 Record DiskFileMgr::indexedSearch(int key, int TableNo) {

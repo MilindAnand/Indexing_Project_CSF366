@@ -75,7 +75,6 @@ void DiskFileMgr::writeTable(Table t) {
 	tabf.close();
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
-	//suggestion for future, maybe build a table info file as well, like page info, might be useful for multiple tables in database
 }
 
 void DiskFileMgr::showDB() {
@@ -96,31 +95,21 @@ void DiskFileMgr::showDB() {
 	file_obj.close();
 }
 
-Page DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)	//for now pgID is used, once I figure out how to store address of page and use it, probably from index file, this will need an edit// edit made
+Page DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)
 {
 	ifstream fp;
 	fp.open("./database/dataFile.txt", ios::in);
-	/*string toignore;
-	getline(fp, toignore);
-	*/
 	vector<Record> rec;
-	//fp.seekg(recordSize*pageLength*pgID, ios::cur);			//NOTE: This assumes pgID starts from 0, if it starts from 1, then replace pgID with (pgID-1)
-	//another assumption used here is the fixed size of each record, if that isnt met then the address will be calculated wrongly
-	//if address is known, use fp.seekg(pgAddr, ios::cur) instead
-
 	fp.seekg(pgAddr, ios::cur);
-	//cout<<"Pre loop";
-	for (int i = 0; i < pgSize; ++i)						//Need to change this from pageLength to length of 
+	
+	for (int i = 0; i < pgSize; ++i)
 	{
 		char tmp[recordSize];
 		fp.getline(tmp, recordSize);
-		//cout<<tmp<<endl;
 		Record r = Record(tmp);
 		rec.push_back(r);
 	}
 	Page pg = Page(rec, pgAddr);
-	//pg.showPageInfo();
-	//cout<<"Post call";
 	fp.close();
 	return pg;
 }
@@ -131,8 +120,7 @@ void DiskFileMgr::buildPageFile() {
 	ofstream pgf;
 	dbf.open("./database/dataFile.txt", ios::in);
 	pgf.open("./database/Pageinfo.txt", ios::out);
-	/*string toignore;
-	getline(dbf, toignore);*/
+
 	int pos=0, pid=0, psize=0;
 	pgf << pos << " " << pid << " ";
 	while(!dbf.eof()){
@@ -194,42 +182,9 @@ Record DiskFileMgr::linearSearch(int key, int TableNo) {
 	struct timeval start, end; 
     gettimeofday(&start, NULL); 
     ios_base::sync_with_stdio(false); 
-	/*ifstream tabf, dbf;
-	int SA=-1, NR=-1, spg, epg;
-	string rec;
-	tabf.open("./database/Tableinfo.txt", ios::in);
-	dbf.open("./database/dataFile.txt", ios::in);
-    while(TableNo-- && !tabf.eof()) {
-		string s;
-		getline(tabf, s);
-		if(s.length()==0)
-			break;
-	}
-	tabf >> SA >> NR >> spg >> epg;
-	if(TableNo != -1 || NR == -1) {
-		cout<<"LINEAR SEARCH : INVALID TABLE NUMBER\n";
-		return Record("");
-	}
-	dbf.seekg(SA, ios::beg);
-	while(NR--) {
-		getline(dbf, rec);
-		Record res = Record(rec);
-		if(res.chkKey(key)) 
-		{
-	        
-	        gettimeofday(&end, NULL); 
-            double time_taken; 
-            time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
-			time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
-  			cout<<"LINEAR TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
-            tabf.close();
-            dbf.close();
-			return res;
-		}
-	}
-	*/
-    int blockAccess = 0;
+	
 	vector<Page> vpg = getTablePages(TableNo);
+    int blockAccess = 2;
 	Record res;
 	int found=0;
 	for (int i = 0; i < vpg.size(); ++i, blockAccess++)
@@ -254,8 +209,6 @@ Record DiskFileMgr::linearSearch(int key, int TableNo) {
 	time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
 	cout<<"LINEAR TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
 
-	//tabf.close();
-	//dbf.close();
 	return res;
 }
 
@@ -280,7 +233,7 @@ Record DiskFileMgr::naivelinearSearch(int key, int TableNo) {
 		cout<<"LINEAR SEARCH : INVALID TABLE NUMBER\n";
 		return Record("");
 	}
-	//dbf.seekg(SA, ios::beg);
+	
 	while(!dbf.eof()) {
 		getline(dbf, rec);
 		Record res = Record(rec);
@@ -350,22 +303,15 @@ void DiskFileMgr::buildIndexFile() {
 
 int DiskFileMgr::binSrc(int left, int right, vector<Page> vpg, int &numAccs, int srckey)
 {
-	/*if (left>right)
-	{
-		printf("NOT FOUND\n");
-		return numAccs;
-	}*/
 	int mid = left + (right-left)/2;
 	//cout<<left<<" "<<mid<<" "<<right<<"\n";
 	if(mid==right)
 	{
-		//vpg[mid].showPageInfo();
 		numAccs++;
 		return right;
 	}
 	if(vpg[mid].topInd() <= srckey && srckey < vpg[mid+1].topInd())
 	{
-		//vpg[mid].showPageInfo();
 		numAccs++;
 		return mid;
 	}
@@ -387,51 +333,8 @@ cont DiskFileMgr::indexHelper(int key, int TableNo) {
 	cont result;
 	result.pAdd = -1;
 	result.pSiz = -1;
-	/*ifstream tabf, indf, dbf;
-	tabf.open("./database/Tableinfo.txt", ios::in);
-	indf.open("./database/indexFile.txt", ios::in);
-	while(TableNo-- && !tabf.eof()){
-		string s, t;
-		getline(tabf, s);
-		getline(indf, t);
-		if(s.length()==0)
-			break;
-	}
-	int SA=-1, NR=-1, spg, epg;
-	tabf >> SA >> NR >> spg >> epg;
-	if(TableNo != -1 || NR == -1)
-	{
-		cout<<"INVALID TABLE NUMBER\n";
-		return result;
-	}
-	int pgno=spg, pAddr=-1, pSize=-1;
-	do{
-		string s;
-		indf >> s;
-		size_t p1 = s.find(',');
-		size_t p2 = s.find(',', p1+1);
-		size_t p3 = s.find(',', p2+1);
-	
-		int addr = stoi(s.substr(p1+1, p2)), size = stoi(s.substr(p2+1, p3)), k = stoi(s.substr(p3+1, s.length()));
-	
-		if(k > key)
-		{
-			pgno--;
-			break;
-		}
-		pAddr = addr;
-		pSize = size;
-		pgno++;
-		
-		if (k==key)
-			break;
-	}while(pgno != epg+1);
-	result.pAdd = pAddr;
-	result.pSiz = pSize;
-	tabf.close();
-    indf.close();*/
     vector<Page> vpg = DiskFileMgr::getTablePages(TableNo);
-    int numAccs=0, left=0, right=vpg.size()-1;
+    int numAccs=2, left=0, right=vpg.size()-1;
     Page pg = vpg[DiskFileMgr::binSrc(left, right, vpg, numAccs, key)];
     result.pAdd = pg.getAddr();
     result.pSiz = pg.getSize();
@@ -450,9 +353,7 @@ Record DiskFileMgr::indexedSearch(int key, int TableNo) {
 		cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";	
 		return Record("");	
 	}
-	// dbf.seekg(SA, ios::beg);
-	//for(long long i=0; i<100000000;i++);
-	cout<<pAddr<<" "<<pSize<<endl;
+	//cout<<pAddr<<" "<<pSize<<endl;
 	Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
 	Record res = pg.searchPage(key);
 	
@@ -490,10 +391,6 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec) {
 			flag=1;
 			break;
 		}
-		/*else
-		{
-			cout<<tr.retKey()<<endl;
-		}*/
 		offset += (tr.retLen()+1);
 	}
 	if(!flag) {

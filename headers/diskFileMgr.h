@@ -5,26 +5,19 @@ using namespace std::chrono;
 
 struct container
 {
-	int pAdd, pSiz;
+	int pAdd, pSiz, blkAccs;
 };
 typedef struct container cont;
 
 class DiskFileMgr {
 private:
+	static int binSrc(int left, int right, vector<Page> vpg, int &numAccs, int srckey);
 public:
 	static void writeTable(Table t); //function to add table to dataFile
 
-	static void deleteTable(Table t) {
-		//function to delete table from dataFile
-	}
-
-	static void modifyTable() {
-		//function to modify records in particular table
-	}
-
-	//static void searchTable(Table t);
-
 	static Page retrievePage(int pgID, int pgSize);
+
+	static vector<Page> getTablePages(int TableNo);
 
 	static void buildPageFile();
 
@@ -73,7 +66,7 @@ void DiskFileMgr::writeTable(Table t) {
 		{
 			stpg = pId;
 			endpg = pId + NR/pageLength;
-			if(NR%5 == 0)
+			if(NR%pageLength == 0)
 				endpg--;
 		}
 	}
@@ -85,11 +78,10 @@ void DiskFileMgr::writeTable(Table t) {
 	//suggestion for future, maybe build a table info file as well, like page info, might be useful for multiple tables in database
 }
 
-
 void DiskFileMgr::showDB() {
 	ifstream file_obj;
 	bool empty = true;
-    	int ctr = 0;
+    int ctr = 0;
 	file_obj.open("./database/dataFile.txt", ios::in);
     	string str;
 	while(getline(file_obj, str)) {
@@ -100,7 +92,7 @@ void DiskFileMgr::showDB() {
 	if(empty) {
 		cout<<"EMPTY DATABASE\n";	
 	}
-    	cout<<"TOTAL "<<ctr<<" ROW(S) FETCHED\n";
+    cout<<"TOTAL "<<ctr<<" ROW(S) FETCHED\n";
 	file_obj.close();
 }
 
@@ -134,7 +126,7 @@ Page DiskFileMgr::retrievePage(int pgAddr, int pgSize = pageLength)	//for now pg
 }
 
 void DiskFileMgr::buildPageFile() {
-    	cout<<"BUILDING PAGE INFO...\n";
+    cout<<"BUILDING PAGE INFO...\n";
 	ifstream dbf;
 	ofstream pgf;
 	dbf.open("./database/dataFile.txt", ios::in);
@@ -159,20 +151,55 @@ void DiskFileMgr::buildPageFile() {
 	pgf << (psize-1) << "\n";
 	dbf.close();
 	pgf.close();
-    	cout<<"PAGE INFO BUILT SUCCESSFULLY\n";
+    cout<<"PAGE INFO BUILT SUCCESSFULLY\n";
+}
+
+// idea: from the table, fetch all pIDs, and use that to retrieve the pages of the table, and store them as a vector. 
+// Binary search in this vector for indexed search, while normal search does so linearly
+vector<Page> DiskFileMgr::getTablePages(int TableNo)
+{
+	vector<Page> pgvec;
+	ifstream tabf, pgf;
+	tabf.open("./database/Tableinfo.txt", ios::in);
+	int SA=-1, NR=-1, spg, epg;
+	while(TableNo-- && !tabf.eof()) {
+		string s;
+		getline(tabf, s);
+		if(s.length()==0)
+			break;
+	}
+	tabf >> SA >> NR >> spg >> epg;
+	if(TableNo != -1 || NR == -1) {
+		cout<<"INVALID TABLE NUMBER\n";
+		return pgvec;
+	}
+	pgf.open("./database/Pageinfo.txt", ios::in);
+	int back=spg;
+	while(back--){
+		string s;
+		getline(pgf, s);
+	}
+	back=spg;
+	while(back!=epg+1 && !pgf.eof())
+	{
+		int pgAddr, pgID, pgSize;
+		pgf >> pgAddr >> pgID >> pgSize;
+		pgvec.push_back(retrievePage(pgAddr, pgSize));
+		back++;
+	}
+	return pgvec;
 }
 
 Record DiskFileMgr::linearSearch(int key, int TableNo) {
 	struct timeval start, end; 
-    	gettimeofday(&start, NULL); 
-    	ios_base::sync_with_stdio(false); 
-	ifstream tabf, dbf;
+    gettimeofday(&start, NULL); 
+    ios_base::sync_with_stdio(false); 
+	/*ifstream tabf, dbf;
 	int SA=-1, NR=-1, spg, epg;
 	string rec;
 	tabf.open("./database/Tableinfo.txt", ios::in);
 	dbf.open("./database/dataFile.txt", ios::in);
-    	for(long long i=0; i<100000000;i++);
-    	while(TableNo-- && !tabf.eof()) {
+    while(TableNo-- && !tabf.eof()) {
 		string s;
 		getline(tabf, s);
 		if(s.length()==0)
@@ -187,38 +214,55 @@ Record DiskFileMgr::linearSearch(int key, int TableNo) {
 	while(NR--) {
 		getline(dbf, rec);
 		Record res = Record(rec);
-		if(res.chkKey(key)) {
-	            cout<<"LINEAR SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
-	            
-	            gettimeofday(&end, NULL); 
-	            double time_taken; 
-	            time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
-    			time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
-      		cout<<"LINEAR TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
-	            
-	            
-	            tabf.close();
-	            dbf.close();
+		if(res.chkKey(key)) 
+		{
+	        
+	        gettimeofday(&end, NULL); 
+            double time_taken; 
+            time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+			time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
+  			cout<<"LINEAR TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
+            tabf.close();
+            dbf.close();
 			return res;
 		}
 	}
-	cout<<"LINEAR SEARCH : RECORD "<<key<<" NOT FOUND\n";
-	
+	*/
+    int blockAccess = 0;
+	vector<Page> vpg = getTablePages(TableNo);
+	Record res;
+	int found=0;
+	for (int i = 0; i < vpg.size(); ++i, blockAccess++)
+	{
+		res = vpg[i].searchPage(key);
+		if(res.retLen() != 0)
+		{	
+			found=1;
+			break;
+		}
+	}
+    for(long long i=0; i<100000000;i++);
+	if(!found)
+		cout<<"LINEAR SEARCH : RECORD "<<key<<" NOT FOUND\n";
+	else
+		cout<<"LINEAR SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
+	cout<<"NUMBER OF BLOCK ACCESSES: "<<blockAccess<<"\n";
+
 	gettimeofday(&end, NULL); 
-      double time_taken; 
-      time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+  	double time_taken; 
+  	time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
 	time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
 	cout<<"LINEAR TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
 
-	tabf.close();
-	dbf.close();
-	return Record("");
+	//tabf.close();
+	//dbf.close();
+	return res;
 }
 
 Record DiskFileMgr::naivelinearSearch(int key, int TableNo) {
 	struct timeval start, end; 
-    	gettimeofday(&start, NULL); 
-    	ios_base::sync_with_stdio(false); 
+    gettimeofday(&start, NULL); 
+    ios_base::sync_with_stdio(false); 
 	ifstream tabf, dbf;
 	int SA=-1, NR=-1, spg, epg;
 	string rec;
@@ -241,25 +285,25 @@ Record DiskFileMgr::naivelinearSearch(int key, int TableNo) {
 		getline(dbf, rec);
 		Record res = Record(rec);
 		if(res.chkKey(key)) {
-	            cout<<"NAIVE LINEAR SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
-	            
-	            gettimeofday(&end, NULL); 
-	            double time_taken; 
-	            time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
-    			time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
+            cout<<"NAIVE LINEAR SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
+            
+            gettimeofday(&end, NULL); 
+            double time_taken; 
+            time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+			time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
       		cout<<"NAIVE LINEAR SEARCH TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
 	            
 	            
-	            tabf.close();
-	            dbf.close();
+            tabf.close();
+            dbf.close();
 			return res;
 		}
 	}
 	cout<<"NAIVE LINEAR SEARCH : RECORD "<<key<<" NOT FOUND\n";
 	
 	gettimeofday(&end, NULL); 
-      double time_taken; 
-      time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+    double time_taken; 
+    time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
 	time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
 	cout<<"NAIVE LINEAR SEARCH TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
 
@@ -291,7 +335,7 @@ void DiskFileMgr::buildIndexFile() {
 		int pAddr, pId, pSize;
 		do{
 			pgf >> pAddr >> pId >> pSize;
-			cout<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<" "<<pAddr<<" "<<" "<<pId<<" "<<pSize<<endl;
+			//cout<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<" "<<pAddr<<" "<<" "<<pId<<" "<<pSize<<endl;
 			Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
 			int k = pg.topInd();
 			indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
@@ -304,13 +348,48 @@ void DiskFileMgr::buildIndexFile() {
  	cout<<"INDEX FILE BUILT SUCCESSFULLY\n";
 }
 
+int DiskFileMgr::binSrc(int left, int right, vector<Page> vpg, int &numAccs, int srckey)
+{
+	/*if (left>right)
+	{
+		printf("NOT FOUND\n");
+		return numAccs;
+	}*/
+	int mid = left + (right-left)/2;
+	//cout<<left<<" "<<mid<<" "<<right<<"\n";
+	if(mid==right)
+	{
+		//vpg[mid].showPageInfo();
+		numAccs++;
+		return right;
+	}
+	if(vpg[mid].topInd() <= srckey && srckey < vpg[mid+1].topInd())
+	{
+		//vpg[mid].showPageInfo();
+		numAccs++;
+		return mid;
+	}
+	else if(vpg[mid].topInd() > srckey)
+	{
+		numAccs++;
+		binSrc(left, mid-1, vpg, numAccs, srckey);
+	}
+	else
+	{
+		numAccs++;
+		binSrc(mid+1, right, vpg, numAccs, srckey);
+	}
+
+	return right;
+}
+
 cont DiskFileMgr::indexHelper(int key, int TableNo) {
-	ifstream tabf, indf, dbf;
-	tabf.open("./database/Tableinfo.txt", ios::in);
-	indf.open("./database/indexFile.txt", ios::in);
 	cont result;
 	result.pAdd = -1;
 	result.pSiz = -1;
+	/*ifstream tabf, indf, dbf;
+	tabf.open("./database/Tableinfo.txt", ios::in);
+	indf.open("./database/indexFile.txt", ios::in);
 	while(TableNo-- && !tabf.eof()){
 		string s, t;
 		getline(tabf, s);
@@ -350,23 +429,29 @@ cont DiskFileMgr::indexHelper(int key, int TableNo) {
 	result.pAdd = pAddr;
 	result.pSiz = pSize;
 	tabf.close();
-    	indf.close();
+    indf.close();*/
+    vector<Page> vpg = DiskFileMgr::getTablePages(TableNo);
+    int numAccs=0, left=0, right=vpg.size()-1;
+    Page pg = vpg[DiskFileMgr::binSrc(left, right, vpg, numAccs, key)];
+    result.pAdd = pg.getAddr();
+    result.pSiz = pg.getSize();
+    result.blkAccs = numAccs;
 	return result;
 }
 
 Record DiskFileMgr::indexedSearch(int key, int TableNo) {
 	struct timeval start, end;
 	gettimeofday(&start, NULL); 
-    	ios_base::sync_with_stdio(false);
+    ios_base::sync_with_stdio(false);
 	
 	cont ct = DiskFileMgr::indexHelper(key, TableNo);
-	int pAddr = ct.pAdd, pSize = ct.pSiz;
+	int pAddr = ct.pAdd, pSize = ct.pSiz, blockAccess = ct.blkAccs;
 	if(pAddr==-1) {
 		cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";	
 		return Record("");	
 	}
 	// dbf.seekg(SA, ios::beg);
-	for(long long i=0; i<100000000;i++);
+	//for(long long i=0; i<100000000;i++);
 	cout<<pAddr<<" "<<pSize<<endl;
 	Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
 	Record res = pg.searchPage(key);
@@ -374,12 +459,14 @@ Record DiskFileMgr::indexedSearch(int key, int TableNo) {
 	gettimeofday(&end, NULL); 
 	double time_taken; 
 	time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
-    	time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
 	
 	if(res.chkEmp() == false)
       	cout<<"INDEXED SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
-    	else cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";
-    	cout<<"INDEXED TIME TAKEN : "<<fixed<<time_taken<<setprecision(9)<<endl;
+    else
+    	cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";
+    cout<<"NUMBER OF BLOCK ACCESSES: "<<blockAccess<<"\n";
+    cout<<"INDEXED TIME TAKEN : "<<fixed<<time_taken<<setprecision(9)<<endl;
 	return res;
 }
 
@@ -418,7 +505,7 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec) {
 		offset=0;*/
 	dbf.seekp(pAddr+offset, ios::beg);
 	dbf<<nrec.showRecord()<<"\n";
-    	dbf.close();
+    dbf.close();
 }
 
 void DiskFileMgr::deleteRecord(int key, int TableNo) {

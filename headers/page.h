@@ -45,8 +45,10 @@ public:
 		}
 		return res;
 	}
-
-	void setPageInfo() {
-
+	int getAddr(){
+		return startAddr;
+	}
+	int getSize(){
+		return numRec;
 	}
 };

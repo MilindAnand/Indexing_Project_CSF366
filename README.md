@@ -2,9 +2,10 @@
 Datbase Systems project related to indexing and disk management 
 
 # How to run the program
-1) Open terminal in root folder
-2) Type the following line in terminal
-   "g++ -o main.o main.cpp"
+## Ubuntu 20.04
+In root directory:
+   $ g++ main.cpp - main.o
+   $ ./main.o
    
 #Progress made till now
 1) Simulation of DiskFileManager created
@@ -15,7 +16,13 @@ Datbase Systems project related to indexing and disk management
 6) Organising main function for better UX
 7) Addition, Deletion and Modification of records
 8) Apply time functions to measure performance improvements.
+9) Apply number of block(file) accesses as a measure of performance improvements.
+10) BPTree class created for multilevel indexing
+11) Insertion into BPTree 
+12) Search in BPTree integrated with the rest of the program
 
 #Things left to do
 1) Testing current functions, especially for multiple tables as that has not been extensively tested
-2) Apply number of block(file) accesses as a measure of performance improvements.
+2) Add time and block access measurements to multilevel indexed search to measure performance
+3) Add further functionalities to BPTree
+4) Serialise BPTree to avoid building it each time.

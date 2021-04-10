@@ -1,4 +1,4 @@
-#define pageLength 50 //The page length is currently fixed to 5 records 
+#define pageLength 5 //The page length is currently fixed to 5 records 
 
 #include<bits/stdc++.h>
 
@@ -6,6 +6,7 @@
 #include "./headers/page.h"
 #include "./headers/table.h"
 #include "./headers/diskFileMgr.h" 
+//#include "./headers/bptree.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ using namespace std;
 int main() {
 	int resp=1;
 	do{
-		cout<<"1. Show Database\n2. Linear Search\n3. Indexed Search\n4. Modify Record\n5. Delete Record\n6. Add Record\n7. Add Table\n8. Naive Linear Search\n0. Exit\n\nEnter Choice: ";
+		cout<<"1. Show Database\n2. Linear Search\n3. Indexed Search\n4. Multi-Indexed Search (BPTree)\n5. Modify Record\n6. Delete Record\n7. Add Record\n8. Add Table\n9. Naive Linear Search\n0. Exit\n\nEnter Choice: ";
 		cin>>resp;
 		switch(resp){
 			case 1: {
@@ -49,6 +50,20 @@ int main() {
 				break;
 			}
 			case 4: {
+				DiskFileMgr::buildBPTree();
+				cout<<"Enter key: ";
+				int k, tno;
+				cin>>k;
+				cout<<"Enter Table number: ";
+				cin>>tno;
+				Record r3 = DiskFileMgr::BPTreeSearch(k, tno);
+				if(!r3.chkEmp())
+					cout<<r3.showRecord()<<endl;
+				else
+					cout<<"\nNot found"<<endl;
+				break;
+			}
+			case 5: {
 				int k, tno;
 				cout<<"Enter key: ";
 				cin>>k;
@@ -67,7 +82,7 @@ int main() {
 				DiskFileMgr::modifyRecord(k, tno, rec);
 				break;
 			}
-			case 5: {
+			case 6: {
 				int k, tno;
 				cout<<"Enter key: ";
 				cin>>k;
@@ -76,7 +91,7 @@ int main() {
 				DiskFileMgr::deleteRecord(k, tno);
 				break;
 			}
-			case 6: {
+			case 7: {
 				int tno;
 				cout<<"Enter Table number: ";
 				cin>>tno;
@@ -88,7 +103,7 @@ int main() {
 				DiskFileMgr::addRecord(tno, rec);
 				break;
 			}
-			case 7: {
+			case 8: {
 				vector<Record> r;
 				int NR;
 				cout<<"Enter number of rows: ";
@@ -106,7 +121,7 @@ int main() {
 				DiskFileMgr::writeTable(T);
 				break;
 			}
-			case 8: {
+			case 9: {
 				cout<<"Enter key: ";
 				int k, tno;
 				cin>>k;

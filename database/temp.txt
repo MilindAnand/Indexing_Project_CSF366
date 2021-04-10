@@ -1,4 +1,0 @@
-134841,Donna,Brown,F,9/14/1983,57,2013,129836,Lima,14485,drbrown                                                                                     
-153989,Jack,Alexander,M,5/19/1995,61,2017,82965,Las Vegas,89170,jcalexander                                                                          
-158666,Rebecca,Stewart,F,08-11-1961,55,1983,160043,Independence,93526,rastewart                                                                      
-162402,Diana,Peterson,F,11/13/1987,60,2014,43010,Eureka Springs,72632,dtpeterson                                                                     

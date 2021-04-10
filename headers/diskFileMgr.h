@@ -3,16 +3,21 @@
 using namespace std;
 using namespace std::chrono;
 
+#include "bptree.h"
+
 struct container
 {
 	int pAdd, pSiz, blkAccs;
 };
 typedef struct container cont;
 
+vector<BPTree> BPTrees;
+
 class DiskFileMgr {
 private:
 	static int binSrc(int left, int right, vector<Page> vpg, int &numAccs, int srckey);
 public:
+
 	static void writeTable(Table t); //function to add table to dataFile
 
 	static Page retrievePage(int pgID, int pgSize);
@@ -38,6 +43,10 @@ public:
 	static void deleteRecord(int key, int TableNo);
 
 	static void addRecord(int TableNo, Record nrec);
+
+	static void buildBPTree();
+
+	static Record BPTreeSearch(int key, int TableNo);
 };
 
 void DiskFileMgr::writeTable(Table t) {
@@ -75,6 +84,8 @@ void DiskFileMgr::writeTable(Table t) {
 	tabf.close();
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
+	//BPTrees.resize()
+	//DiskFileMgr::buildBPTree();
 }
 
 void DiskFileMgr::showDB() {
@@ -485,4 +496,64 @@ void DiskFileMgr::addRecord(int TableNo, Record nrec) {
 	tabf.seekp(offset, ios::beg);
 	tabf<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<"\n";
 	tabf.close();
+}
+
+void DiskFileMgr::buildBPTree()
+{
+	//cout<<"Before Clear";
+	ifstream indf;
+	indf.open("./database/indexFile.txt");
+	BPTrees.clear();
+	//cout<<"Opened File Successfully\n\n";
+	while(!indf.eof())		
+	{
+		//cout<<"Inside indf while\n\n";
+		string indstr;
+		getline(indf, indstr);
+		BPTree newTree = BPTree();
+		//cout<<"Declared BPTree, string read was: "<<indstr<<"\n\n";
+		stringstream tmp(indstr);
+		while(!tmp.eof())
+		{
+			//cout<<"Inside tmp while\n\n";
+			string s;
+			tmp >> s;
+			stringstream s_stream(s);
+			if(s.length() == 0)
+				break;
+			string pIDs, pAddrs, pSizes, keystr;
+			getline(s_stream, pIDs, ',');
+			getline(s_stream, pAddrs, ',');
+			getline(s_stream, pSizes, ',');
+			getline(s_stream, keystr, ',');
+			//cout<<"Before stoi: "<<s.length()<<" "<<pIDs<<" "<<pAddrs<<" "<<pSizes<<" "<<keystr<<"\n\n";
+			int pAddr = stoi(pAddrs), key = stoi(keystr);
+
+			//cout<<pAddr<<" "<<key<<"\nBefore BPinsert\n";
+			newTree.BPinsert(key, pAddr);
+			//cout<<"After BPinsert\n";
+			//indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
+		}
+		BPTrees.push_back(newTree);
+	}
+	indf.close();
+}
+
+Record DiskFileMgr::BPTreeSearch(int key, int TableNo)
+{
+	BPTree bpt = BPTrees[TableNo];
+	kas res = bpt.search(key);
+	Record rec;
+	if(res.addr == -1)
+		cout<<"PAGE NOT FOUND";
+	else
+	{
+		Page pg = DiskFileMgr::retrievePage(res.addr);
+		rec = pg.searchPage(key);
+		if(!rec.chkEmp())
+			cout<<"BPTREE SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
+    	else
+    		cout<<"BPTREE SEARCH : RECORD "<<key<<" NOT FOUND\n";
+	}
+	return rec;
 }

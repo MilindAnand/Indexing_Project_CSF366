@@ -45,6 +45,23 @@ public:
 		}
 		return res;
 	}
+
+	vector<Record> getAll(int val){
+		int found = 0;
+		vector<Record> ans;
+		for (int i = 0; i < pageLength; i++)
+		{
+			if(r[i].chkKey(val))
+			{
+				ans.push_back(r[i]);
+				found = 1;
+			}
+			else if (found == 1)
+				break;
+		}
+		return ans;
+	}
+
 	int getAddr(){
 		return startAddr;
 	}

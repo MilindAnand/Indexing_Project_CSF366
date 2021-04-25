@@ -32,20 +32,14 @@ public:
 		order = _order;
 		vals.resize(order);
 		vals.clear();
-		//cout<<"Inside Node decln\n\n";
 		pointers.resize(_order+1);
 		pointers.clear();
-		//cout<<"Post resize\n\n";
 		for (int i = 0; i < _order+1; ++i)
 		{
 			pointers.push_back(NULL);
 		}
-		//cout<<"Before isLeaf\n\n";
 		isLeaf = leaf;
-		//cout<<"Good init\n\n";
-		//*parent = NULL;
 	}
-
 };
 
 class BPTree{
@@ -149,20 +143,13 @@ void BPTree::BPinsert(int _key, int _addr)
 		}
 		else
 		{
-			//cout<<"Inside overflow sfgpart\n";
-			//cout<<"Before node decln\n\n";
 			Node *newLeaf = new Node(MAXorder, true);
-			//cout<<"Before vector decln\n\n";
 			vector<kas> modvec(cursor->vals);
-			//cout<<"After vec devln\n\n";
 			int pos=0;
 			while(_key > modvec[pos].key && pos < modvec.size())
 				pos++;
-			//cout<<"After while\n\n";
 			kas x(_key, _addr);
-			//cout<<"Before insert\n\n"<<cursor->vals.size()<<" "<<pos<<"\n\n";
 			modvec.insert(modvec.begin() + pos, x);
-			//cout<<"After mid\n\n";
 			int mid = (MAXorder+1)/2;
 			cursor->pointers[mid] = newLeaf;
 			newLeaf->pointers[MAXorder + 1 - mid] = cursor->pointers[MAXorder];

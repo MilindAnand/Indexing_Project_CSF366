@@ -47,6 +47,24 @@ public:
 	static void buildBPTree();
 
 	static Record BPTreeSearch(int key, int TableNo);
+
+	static void showClustDB();
+
+	static void writeClustTable(Table T);
+
+	static void buildClustPageFile();
+
+	static void buildClustIndexFile();
+
+	static Page retrieveClustPage(int pgAddr, int pgSize);
+
+	static vector<Page> getClustTablePages(int TableNo);
+
+	static vector<Record> clustLinearSearch(int val, int TableNo);
+
+	static int clustBinSrc(int left, int right, vector<Page> vpg, int &numAccs, int srckey);
+
+	static vector<Record> clustIndexedSearch(int val, int TableNo);
 };
 
 void DiskFileMgr::writeTable(Table t) {
@@ -93,7 +111,7 @@ void DiskFileMgr::showDB() {
 	bool empty = true;
     int ctr = 0;
 	file_obj.open("./database/dataFile.txt", ios::in);
-    	string str;
+    string str;
 	while(getline(file_obj, str)) {
 		empty = false;
 		cout<<"RECORD "<<ctr<<" : "<<str<<endl;
@@ -194,7 +212,7 @@ Record DiskFileMgr::linearSearch(int key, int TableNo) {
     gettimeofday(&start, NULL); 
     ios_base::sync_with_stdio(false); 
 	
-	vector<Page> vpg = getTablePages(TableNo);
+	vector<Page> vpg = DiskFileMgr::getTablePages(TableNo);
     int blockAccess = 2;
 	Record res;
 	int found=0;
@@ -556,4 +574,301 @@ Record DiskFileMgr::BPTreeSearch(int key, int TableNo)
     		cout<<"BPTREE SEARCH : RECORD "<<key<<" NOT FOUND\n";
 	}
 	return rec;
+}
+
+void DiskFileMgr::showClustDB()
+{
+	ifstream file_obj;
+	bool empty = true;
+    int ctr = 0;
+	file_obj.open("./database/clustDataFile.txt", ios::in);
+    string str;
+	while(getline(file_obj, str)) {
+		empty = false;
+		cout<<"RECORD "<<ctr<<" : "<<str<<endl;
+        ctr++;
+	}
+	if(empty) {
+		cout<<"EMPTY DATABASE\n";	
+	}
+    cout<<"TOTAL "<<ctr<<" ROW(S) FETCHED\n";
+	file_obj.close();
+}
+
+void DiskFileMgr::writeClustTable(Table t) {
+	ofstream file_obj, tabf;
+	file_obj.open("./database/clustDataFile.txt", ios::app);
+	tabf.open("./database/clustTableinfo.txt", ios::app);
+	file_obj.seekp(0, ios::end);
+	//fprintf(file_obj, "%d,%d\n", t.retSA(), t.retNR());
+	t.setAddr(file_obj.tellp());
+	int SA = t.retSA(), NR = t.retNR();
+	for (int i = 0; i < NR; ++i)
+	{
+		Record r = t.retRec(i);
+		file_obj << r.showRecord() << "\n";
+	}
+
+	file_obj.close();
+	DiskFileMgr::buildClustPageFile();
+	ifstream pgf;
+	pgf.open("./database/clustPageinfo.txt", ios::in);
+	int pAddr, pId, pSize, stpg=-1, endpg=-1;
+	while(!pgf.eof())
+	{
+		pgf>>pAddr>>pId>>pSize;
+		if(pAddr == SA)
+		{
+			stpg = pId;
+			endpg = pId + NR/pageLength;
+			if(NR%pageLength == 0)
+				endpg--;
+		}
+	}
+	tabf << SA << " " << NR << " " << stpg << " " << endpg << "\n";
+	pgf.close();
+	tabf.close();
+	DiskFileMgr::buildClustPageFile();
+	DiskFileMgr::buildClustIndexFile();
+	//BPTrees.resize()
+	//DiskFileMgr::buildBPTree();
+}
+
+void DiskFileMgr::buildClustPageFile() {
+    cout<<"BUILDING PAGE INFO...\n";
+	ifstream dbf;
+	ofstream pgf;
+	dbf.open("./database/clustDataFile.txt", ios::in);
+	pgf.open("./database/clustPageinfo.txt", ios::out);
+
+	int pos=0, pid=0, psize=0;
+	pgf << pos << " " << pid << " ";
+	while(!dbf.eof()){
+		string r;
+		getline(dbf, r);
+		psize++;
+		pos+=(r.length()+1);
+		if(psize == pageLength && !dbf.eof())
+		{
+			pid++;
+			pgf << psize << "\n" << pos << " " << pid << " ";
+			psize=0;
+		}
+	}
+	//if(psize != 0)		//note this writes extra page of size zero at the end if exactly 5 records in last page, shouldnt be an issue ig
+	pgf << (psize-1) << "\n";
+	dbf.close();
+	pgf.close();
+    cout<<"PAGE INFO BUILT SUCCESSFULLY\n";
+}
+
+void DiskFileMgr::buildClustIndexFile() {
+	//idea here is to store the index entries for each table on one line, with page number and id number separated by , as delimiter
+	cout<<"BUILDING INDEX FILE...\n";
+	ifstream tabf, pgf;
+	ofstream indf;
+	tabf.open("./database/clustTableinfo.txt", ios::in);
+	indf.open("./database/clustIndexFile.txt", ios::out);
+	while(!tabf.eof())
+	{
+		pgf.open("./database/clustPageinfo.txt", ios::in);
+		int SA=-1, NR, spg, epg;
+		tabf >> SA >> NR >> spg >> epg;
+		if(SA == -1)
+			break;
+		int bck = spg;
+		while(spg && bck--)
+		{
+			string s;
+			getline(pgf, s);		//skipping lines till appropriate line is reached
+		}
+		int pAddr, pId, pSize;
+		do{
+			pgf >> pAddr >> pId >> pSize;
+			//cout<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<" "<<pAddr<<" "<<" "<<pId<<" "<<pSize<<endl;
+			Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
+			int k = pg.topInd();
+			indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
+		}while(pId != epg);
+		indf << "\n";
+		pgf.close();	
+	}
+	tabf.close();
+	indf.close();
+ 	cout<<"INDEX FILE BUILT SUCCESSFULLY\n";
+}
+
+Page DiskFileMgr::retrieveClustPage(int pgAddr, int pgSize = pageLength)
+{
+	ifstream fp;
+	fp.open("./database/clustDataFile.txt", ios::in);
+	vector<Record> rec;
+	fp.seekg(pgAddr, ios::cur);
+	
+	for (int i = 0; i < pgSize; ++i)
+	{
+		char tmp[recordSize];
+		fp.getline(tmp, recordSize);
+		Record r = Record(tmp);
+		rec.push_back(r);
+	}
+	Page pg = Page(rec, pgAddr);
+	fp.close();
+	return pg;
+}
+
+vector<Page> DiskFileMgr::getClustTablePages(int TableNo)
+{
+	vector<Page> pgvec;
+	ifstream tabf, pgf;
+	tabf.open("./database/clustTableinfo.txt", ios::in);
+	int SA=-1, NR=-1, spg, epg;
+	while(TableNo-- && !tabf.eof()) {
+		string s;
+		getline(tabf, s);
+		if(s.length()==0)
+			break;
+	}
+	tabf >> SA >> NR >> spg >> epg;
+	if(TableNo != -1 || NR == -1) {
+		cout<<"INVALID TABLE NUMBER\n";
+		return pgvec;
+	}
+	pgf.open("./database/clustPageinfo.txt", ios::in);
+	int back=spg;
+	while(back--){
+		string s;
+		getline(pgf, s);
+	}
+	back=spg;
+	while(back!=epg+1 && !pgf.eof())
+	{
+		int pgAddr, pgID, pgSize;
+		pgf >> pgAddr >> pgID >> pgSize;
+		pgvec.push_back(DiskFileMgr::retrieveClustPage(pgAddr, pgSize));
+		back++;
+	}
+	return pgvec;
+}
+
+
+vector<Record> DiskFileMgr::clustLinearSearch(int val, int TableNo)
+{
+	struct timeval start, end; 
+    gettimeofday(&start, NULL); 
+    ios_base::sync_with_stdio(false); 
+	
+	vector<Page> vpg = DiskFileMgr::getClustTablePages(TableNo);
+    int blockAccess = 2;
+	vector<Record> result;
+	Record res;
+	int found=0;
+	for (int i = 0; i < vpg.size(); ++i, blockAccess++)
+	{
+		//vpg[i].showPageInfo();
+		res = vpg[i].searchPage(val);
+		if(res.retLen() != 0)
+		{	
+			found=1;
+		}
+		else if(res.retLen() == 0 && found == 1)
+		{
+			break;
+		}
+		if(found)
+		{
+			vector<Record> temp = vpg[i].getAll(val);
+			result.insert(result.end(), temp.begin(), temp.end());
+		}
+	}
+    for(long long i=0; i<100000000;i++);
+	if(!found)
+		cout<<"LINEAR SEARCH : RECORD "<<val<<" NOT FOUND\n";
+	else
+		cout<<"LINEAR SEARCH : RECORDS "<<val<<" FOUND SUCCESSFULLY\n";
+	cout<<"NUMBER OF BLOCK ACCESSES: "<<blockAccess<<"\n";
+
+	gettimeofday(&end, NULL); 
+  	double time_taken; 
+  	time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+	time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6; 
+	cout<<"LINEAR TIME TAKEN : "<<fixed<<time_taken<<std::setprecision(9)<<endl;
+
+	return result;
+}
+
+int DiskFileMgr::clustBinSrc(int left, int right, vector<Page> vpg, int &numAccs, int srckey)
+{
+	while(left<=right)
+	{
+		int mid = left + (right-left)/2;
+		//cout<<left<<" "<<mid<<" "<<right<<"\n";
+		if(mid==right)
+		{
+			numAccs++;
+			return right;
+		}
+		if(vpg[mid-1].topInd() < srckey && srckey <= vpg[mid].topInd() && srckey <= vpg[mid+1].topInd())
+		{
+			numAccs++;
+			return mid;
+		}
+		else if(vpg[mid].topInd() > srckey)
+		{
+			numAccs++;
+			right = mid-1;
+		}
+		else
+		{
+			numAccs++;
+			left = mid+1;
+		}
+	}
+	return -1;
+}
+
+vector<Record> DiskFileMgr::clustIndexedSearch(int val, int TableNo) 
+{
+	struct timeval start, end;
+	gettimeofday(&start, NULL); 
+    ios_base::sync_with_stdio(false);
+
+	vector<Page> vpg = DiskFileMgr::getClustTablePages(TableNo);
+	int blockAccess=2, left=0, right=vpg.size()-1;
+	int ind = DiskFileMgr::clustBinSrc(left, right, vpg, blockAccess, val), found = 1;
+    if(ind != 0)
+		ind--;
+	vector<Record> result;
+	Record res;
+	for (int i = ind; i < vpg.size(); ++i, blockAccess++)
+	{
+		//vpg[i].showPageInfo();
+		res = vpg[i].searchPage(val);
+		if(res.retLen() != 0)
+		{	
+			found=1;
+		}
+		else if(res.retLen() == 0 && found == 1)
+		{
+			break;
+		}
+		if(found)
+		{
+			vector<Record> temp = vpg[i].getAll(val);
+			result.insert(result.end(), temp.begin(), temp.end());
+		}
+	}
+
+	gettimeofday(&end, NULL); 
+	double time_taken; 
+	time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+	
+	if(result.size() != 0)
+      	cout<<"INDEXED SEARCH : RECORD "<<val<<" FOUND SUCCESSFULLY\n";
+    else
+    	cout<<"INDEXED SEARCH : RECORD "<<val<<" NOT FOUND\n";
+    cout<<"NUMBER OF BLOCK ACCESSES: "<<blockAccess<<"\n";
+    cout<<"INDEXED TIME TAKEN : "<<fixed<<time_taken<<setprecision(9)<<endl;
+	return result;
 }

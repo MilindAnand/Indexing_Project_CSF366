@@ -551,7 +551,6 @@ void DiskFileMgr::buildBPTree()
 			//cout<<pAddr<<" "<<key<<"\nBefore BPinsert\n";
 			newTree.BPinsert(key, pAddr);
 			//cout<<"After BPinsert\n";
-			//indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
 		}
 		BPTrees.push_back(newTree);
 	}
@@ -566,7 +565,7 @@ Record DiskFileMgr::BPTreeSearch(int key, int TableNo)
     ios_base::sync_with_stdio(false);
 
 	BPTree bpt = BPTrees[TableNo];
-	kas res = bpt.search(key);
+	ret res = bpt.search(key);
 	Record rec;
 	if(res.addr == -1)
 		cout<<"PAGE NOT FOUND";
@@ -586,11 +585,9 @@ Record DiskFileMgr::BPTreeSearch(int key, int TableNo)
 	time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
     time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
 
-	//int height = res.ht;
-	//cout<<"NUMBER OF BLOCK ACCESSES: "<<(height+1)<<"\n";
+	int height = res.ht;
+	cout<<"NUMBER OF BLOCK ACCESSES: "<<(height+1)<<"\n";
 	cout<<"INDEXED TIME TAKEN : "<<fixed<<time_taken<<setprecision(9)<<endl;
-
-	//bpt.printBPT();
 	return rec;
 }
 

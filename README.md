@@ -4,8 +4,10 @@ Datbase Systems project related to indexing and disk management
 # How to run the program
 ## Ubuntu 20.04
 In root directory:
+```
    $ g++ main.cpp - main.o
    $ ./main.o
+```
    
 # Progress made till now
 1) Simulation of DiskFileManager created

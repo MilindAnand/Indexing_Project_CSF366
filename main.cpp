@@ -53,12 +53,12 @@ int main() {
 						break;
 					}
 					case 4: {
-						DiskFileMgr::buildBPTree();
 						cout<<"Enter key: ";
 						int k, tno;
 						cin>>k;
 						cout<<"Enter Table number: ";
 						cin>>tno;
+						DiskFileMgr::buildBPTree();
 						Record r3 = DiskFileMgr::BPTreeSearch(k, tno);
 						if(!r3.chkEmp())
 							cout<<r3.showRecord()<<endl;

@@ -518,6 +518,7 @@ void DiskFileMgr::addRecord(int TableNo, Record nrec) {
 
 void DiskFileMgr::buildBPTree()
 {
+	//cout<<"Inside BTPbld\n\n";
 	//cout<<"Before Clear";
 	ifstream indf;
 	indf.open("./database/indexFile.txt");
@@ -559,6 +560,11 @@ void DiskFileMgr::buildBPTree()
 
 Record DiskFileMgr::BPTreeSearch(int key, int TableNo)
 {
+	// cout<<"Inside BTPSrc\n\n";
+	struct timeval start, end;
+	gettimeofday(&start, NULL); 
+    ios_base::sync_with_stdio(false);
+
 	BPTree bpt = BPTrees[TableNo];
 	kas res = bpt.search(key);
 	Record rec;
@@ -567,12 +573,24 @@ Record DiskFileMgr::BPTreeSearch(int key, int TableNo)
 	else
 	{
 		Page pg = DiskFileMgr::retrievePage(res.addr);
+		cout<<"Top Ind: "<<pg.topInd()<<endl;
 		rec = pg.searchPage(key);
 		if(!rec.chkEmp())
 			cout<<"BPTREE SEARCH : RECORD "<<key<<" FOUND SUCCESSFULLY\n";
     	else
     		cout<<"BPTREE SEARCH : RECORD "<<key<<" NOT FOUND\n";
 	}
+
+	gettimeofday(&end, NULL); 
+	double time_taken; 
+	time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+
+	//int height = res.ht;
+	//cout<<"NUMBER OF BLOCK ACCESSES: "<<(height+1)<<"\n";
+	cout<<"INDEXED TIME TAKEN : "<<fixed<<time_taken<<setprecision(9)<<endl;
+
+	//bpt.printBPT();
 	return rec;
 }
 

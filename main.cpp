@@ -123,6 +123,27 @@ int main() {
 						Table T = Table(r);
 						DiskFileMgr::writeTable(T);
 						break;
+
+						///////////////
+
+						// vector<Record> r;
+						// /*int NR;
+						// cout<<"Enter number of rows: ";
+						// cin>>NR;
+						// cout<<"Enter rows:\n";
+						// cin.ignore();*/
+						// ifstream inp;
+						// inp.open("./database/Hr1m.csv");
+						// for (long long i = 0; i < 1000000; ++i)
+						// {
+						// 	string s;
+						// 	getline(inp, s);
+						// 	//cout<<s<<endl;
+						// 	r.push_back(Record(s));
+						// }
+						// Table T = Table(r);
+						// DiskFileMgr::writeTable(T);
+						// break;
 					}
 					case 9: {
 						cout<<"Enter key: ";

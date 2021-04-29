@@ -701,7 +701,7 @@ void DiskFileMgr::buildClustIndexFile() {
 		do{
 			pgf >> pAddr >> pId >> pSize;
 			//cout<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<" "<<pAddr<<" "<<" "<<pId<<" "<<pSize<<endl;
-			Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
+			Page pg = DiskFileMgr::retrieveClustPage(pAddr, pSize);
 			int k = pg.topInd();
 			indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
 		}while(pId != epg);

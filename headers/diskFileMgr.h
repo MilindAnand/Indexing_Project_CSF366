@@ -855,6 +855,7 @@ vector<Record> DiskFileMgr::clustIndexedSearch(int val, int TableNo)
 		ind--;
 	vector<Record> result;
 	Record res;
+	if (val == 0) ind = 0;
 	for (int i = ind; i < vpg.size(); ++i, blockAccess++)
 	{
 		//vpg[i].showPageInfo();

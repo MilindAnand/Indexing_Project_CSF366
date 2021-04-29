@@ -41,7 +41,6 @@ private:
 	kas* vals;
 	int size;
 	Node** pointers;
-	int order;
 	bool isLeaf;
 	friend class BPTree;
 
@@ -52,15 +51,15 @@ public:
 		pointers = new Node*[MAXorder+1];
 	}
 
-	void display()
-	{
-		cout<<"||";
-		for (int i = 0; i < size; i++)
-		{
-			cout<<vals[i].key<<" ";
-		}
-		cout<<"||";
-	}
+	// void display()
+	// {
+	// 	cout<<"||";
+	// 	for (int i = 0; i < size; i++)
+	// 	{
+	// 		cout<<vals[i].key<<" ";
+	// 	}
+	// 	cout<<"||";
+	// }
 };
 
 class BPTree{
@@ -75,7 +74,6 @@ public:
 	void BPinsert(int _key, int _addr);
 	void insertInternal(kas val, Node* cursor, Node* child);
 	Node* getParent(Node* cursor, Node* child);
-	void remove(int _key, int _addr);
 };
 
 ret BPTree::search(int _key)

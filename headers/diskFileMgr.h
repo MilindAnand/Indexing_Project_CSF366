@@ -225,7 +225,7 @@ Record DiskFileMgr::linearSearch(int key, int TableNo) {
 			break;
 		}
 	}
-    for(long long i=0; i<100000000;i++);
+    //for(long long i=0; i<100000000;i++);
 	if(!found)
 		cout<<"LINEAR SEARCH : RECORD "<<key<<" NOT FOUND\n";
 	else
@@ -796,7 +796,7 @@ vector<Record> DiskFileMgr::clustLinearSearch(int val, int TableNo)
 			result.insert(result.end(), temp.begin(), temp.end());
 		}
 	}
-    for(long long i=0; i<100000000;i++);
+    //for(long long i=0; i<100000000;i++);
 	if(!found)
 		cout<<"LINEAR SEARCH : RECORD "<<val<<" NOT FOUND\n";
 	else

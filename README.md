@@ -5,7 +5,7 @@ Datbase Systems project related to indexing and disk management
 ## Ubuntu 20.04
 In root directory:
 ```
-   $ g++ main.cpp - main.o
+   $ g++ main.cpp - main.o -fno-stack-protector
    $ ./main.o
 ```
    

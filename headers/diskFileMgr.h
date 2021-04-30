@@ -18,7 +18,7 @@ private:
 	static int binSrc(int left, int right, vector<Page> vpg, int &numAccs, int srckey);
 public:
 
-	static void writeTable(Table t); //function to add table to dataFile
+	static void writeTable(Table t);
 
 	static Page retrievePage(int pgID, int pgSize);
 
@@ -72,7 +72,6 @@ void DiskFileMgr::writeTable(Table t) {
 	file_obj.open("./database/dataFile.txt", ios::app);
 	tabf.open("./database/Tableinfo.txt", ios::app);
 	file_obj.seekp(0, ios::end);
-	//fprintf(file_obj, "%d,%d\n", t.retSA(), t.retNR());
 	t.setAddr(file_obj.tellp());
 	int SA = t.retSA(), NR = t.retNR();
 	for (int i = 0; i < NR; ++i)
@@ -102,8 +101,6 @@ void DiskFileMgr::writeTable(Table t) {
 	tabf.close();
 	DiskFileMgr::buildPageFile();
 	DiskFileMgr::buildIndexFile();
-	//BPTrees.resize()
-	//DiskFileMgr::buildBPTree();
 }
 
 void DiskFileMgr::showDB() {
@@ -164,7 +161,6 @@ void DiskFileMgr::buildPageFile() {
 			psize=0;
 		}
 	}
-	//if(psize != 0)		//note this writes extra page of size zero at the end if exactly 5 records in last page, shouldnt be an issue ig
 	pgf << (psize-1) << "\n";
 	dbf.close();
 	pgf.close();
@@ -225,7 +221,6 @@ Record DiskFileMgr::linearSearch(int key, int TableNo) {
 			break;
 		}
 	}
-    //for(long long i=0; i<100000000;i++);
 	if(!found)
 		cout<<"LINEAR SEARCH : RECORD "<<key<<" NOT FOUND\n";
 	else
@@ -317,7 +312,6 @@ void DiskFileMgr::buildIndexFile() {
 		int pAddr, pId, pSize;
 		do{
 			pgf >> pAddr >> pId >> pSize;
-			//cout<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<" "<<pAddr<<" "<<" "<<pId<<" "<<pSize<<endl;
 			Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
 			int k = pg.topInd();
 			indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
@@ -335,7 +329,6 @@ int DiskFileMgr::binSrc(int left, int right, vector<Page> vpg, int &numAccs, int
 	while(left<=right)
 	{
 		int mid = left + (right-left)/2;
-		//cout<<left<<" "<<mid<<" "<<right<<"\n";
 		if(mid==right)
 		{
 			numAccs++;
@@ -385,7 +378,6 @@ Record DiskFileMgr::indexedSearch(int key, int TableNo) {
 		cout<<"INDEXED SEARCH : RECORD "<<key<<" NOT FOUND\n";	
 		return Record("");	
 	}
-	//cout<<pAddr<<" "<<pSize<<endl;
 	Page pg = DiskFileMgr::retrievePage(pAddr, pSize);
 	Record res = pg.searchPage(key);
 	
@@ -430,8 +422,6 @@ void DiskFileMgr::modifyRecord(int key, int TableNo, Record nrec) {
 		dbf.close();
 		return;
 	}
-	/*if(pAddr == 0 && offset==1)
-		offset=0;*/
 	dbf.seekp(pAddr+offset, ios::beg);
 	dbf<<nrec.showRecord()<<"\n";
     dbf.close();
@@ -518,23 +508,17 @@ void DiskFileMgr::addRecord(int TableNo, Record nrec) {
 
 void DiskFileMgr::buildBPTree()
 {
-	//cout<<"Inside BTPbld\n\n";
-	//cout<<"Before Clear";
 	ifstream indf;
 	indf.open("./database/indexFile.txt");
 	BPTrees.clear();
-	//cout<<"Opened File Successfully\n\n";
 	while(!indf.eof())		
 	{
-		//cout<<"Inside indf while\n\n";
 		string indstr;
 		getline(indf, indstr);
 		BPTree newTree = BPTree();
-		//cout<<"Declared BPTree, string read was: "<<indstr<<"\n\n";
 		stringstream tmp(indstr);
 		while(!tmp.eof())
 		{
-			//cout<<"Inside tmp while\n\n";
 			string s;
 			tmp >> s;
 			stringstream s_stream(s);
@@ -545,12 +529,9 @@ void DiskFileMgr::buildBPTree()
 			getline(s_stream, pAddrs, ',');
 			getline(s_stream, pSizes, ',');
 			getline(s_stream, keystr, ',');
-			//cout<<"Before stoi: "<<s.length()<<" "<<pIDs<<" "<<pAddrs<<" "<<pSizes<<" "<<keystr<<"\n\n";
 			int pAddr = stoi(pAddrs), key = stoi(keystr);
 
-			//cout<<pAddr<<" "<<key<<"\nBefore BPinsert\n";
 			newTree.BPinsert(key, pAddr);
-			//cout<<"After BPinsert\n";
 		}
 		BPTrees.push_back(newTree);
 	}
@@ -559,7 +540,6 @@ void DiskFileMgr::buildBPTree()
 
 Record DiskFileMgr::BPTreeSearch(int key, int TableNo)
 {
-	// cout<<"Inside BTPSrc\n\n";
 	struct timeval start, end;
 	gettimeofday(&start, NULL); 
     ios_base::sync_with_stdio(false);
@@ -615,7 +595,6 @@ void DiskFileMgr::writeClustTable(Table t) {
 	file_obj.open("./database/clustDataFile.txt", ios::app);
 	tabf.open("./database/clustTableinfo.txt", ios::app);
 	file_obj.seekp(0, ios::end);
-	//fprintf(file_obj, "%d,%d\n", t.retSA(), t.retNR());
 	t.setAddr(file_obj.tellp());
 	int SA = t.retSA(), NR = t.retNR();
 	for (int i = 0; i < NR; ++i)
@@ -645,8 +624,6 @@ void DiskFileMgr::writeClustTable(Table t) {
 	tabf.close();
 	DiskFileMgr::buildClustPageFile();
 	DiskFileMgr::buildClustIndexFile();
-	//BPTrees.resize()
-	//DiskFileMgr::buildBPTree();
 }
 
 void DiskFileMgr::buildClustPageFile() {
@@ -670,7 +647,6 @@ void DiskFileMgr::buildClustPageFile() {
 			psize=0;
 		}
 	}
-	//if(psize != 0)		//note this writes extra page of size zero at the end if exactly 5 records in last page, shouldnt be an issue ig
 	pgf << (psize-1) << "\n";
 	dbf.close();
 	pgf.close();
@@ -700,7 +676,6 @@ void DiskFileMgr::buildClustIndexFile() {
 		int pAddr, pId, pSize;
 		do{
 			pgf >> pAddr >> pId >> pSize;
-			//cout<<SA<<" "<<NR<<" "<<spg<<" "<<epg<<" "<<pAddr<<" "<<" "<<pId<<" "<<pSize<<endl;
 			Page pg = DiskFileMgr::retrieveClustPage(pAddr, pSize);
 			int k = pg.topInd();
 			indf << pId << "," << pAddr << "," << pSize << "," << k << " ";
@@ -796,7 +771,6 @@ vector<Record> DiskFileMgr::clustLinearSearch(int val, int TableNo)
 			result.insert(result.end(), temp.begin(), temp.end());
 		}
 	}
-    //for(long long i=0; i<100000000;i++);
 	if(!found)
 		cout<<"LINEAR SEARCH : RECORD "<<val<<" NOT FOUND\n";
 	else
@@ -817,7 +791,6 @@ int DiskFileMgr::clustBinSrc(int left, int right, vector<Page> vpg, int &numAccs
 	while(left<=right)
 	{
 		int mid = left + (right-left)/2;
-		//cout<<left<<" "<<mid<<" "<<right<<"\n";
 		if(mid==right)
 		{
 			numAccs++;
@@ -851,40 +824,73 @@ vector<Record> DiskFileMgr::clustIndexedSearch(int val, int TableNo)
 	vector<Page> vpg = DiskFileMgr::getClustTablePages(TableNo);
 	int blockAccess=2, left=0, right=vpg.size()-1;
 	int ind = DiskFileMgr::clustBinSrc(left, right, vpg, blockAccess, val), found = 1;
-    if(ind != 0)
+    if(ind == -1)
+		ind = 0;
+	if(ind != 0)
 		ind--;
 	vector<Record> result;
 	Record res;
 	if (val == 0) ind = 0;
-	for (int i = ind; i < vpg.size(); ++i, blockAccess++)
+	//cout<<"INDEX: "<<ind;
+	if(ind == 0 && val != 0)
 	{
-		//vpg[i].showPageInfo();
-		res = vpg[i].searchPage(val);
-		if(res.retLen() != 0)
-		{	
-			found=1;
-		}
-		else if(res.retLen() == 0 && found == 1)
+		int found=0;
+		for (int i = 0; i < vpg.size(); ++i)
 		{
-			break;
+			//vpg[i].showPageInfo();
+			res = vpg[i].searchPage(val);
+			if(res.retLen() != 0)
+			{	
+				found=1;
+			}
+			else if(res.retLen() == 0 && found == 1)
+			{
+				break;
+			}
+			if(found)
+			{
+				vector<Record> temp = vpg[i].getAll(val);
+				result.insert(result.end(), temp.begin(), temp.end());
+			}
 		}
-		if(found)
-		{
-			vector<Record> temp = vpg[i].getAll(val);
-			result.insert(result.end(), temp.begin(), temp.end());
-		}
+		if(!found)
+			cout<<"INDEXED SEARCH : RECORD "<<val<<" NOT FOUND\n";
+		else
+			cout<<"INDEXED SEARCH : RECORDS "<<val<<" FOUND SUCCESSFULLY\n";
+		cout<<"NUMBER OF BLOCK ACCESSES: "<<blockAccess+2<<"\n";
 	}
+	else 
+	{
+		for (int i = ind; i < vpg.size(); ++i, blockAccess++)
+		{
+			vpg[i].showPageInfo();
+			res = vpg[i].searchPage(val);
+			if(res.retLen() != 0)
+			{	
+				found=1;
+			}
+			else if(res.retLen() == 0 && found == 1)
+			{
+				break;
+			}
+			if(found)
+			{
+				vector<Record> temp = vpg[i].getAll(val);
+				result.insert(result.end(), temp.begin(), temp.end());
+			}
+		}
 
-	gettimeofday(&end, NULL); 
-	double time_taken; 
-	time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
-    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
-	
-	if(result.size() != 0)
-      	cout<<"INDEXED SEARCH : RECORD "<<val<<" FOUND SUCCESSFULLY\n";
-    else
-    	cout<<"INDEXED SEARCH : RECORD "<<val<<" NOT FOUND\n";
-    cout<<"NUMBER OF BLOCK ACCESSES: "<<blockAccess<<"\n";
-    cout<<"INDEXED TIME TAKEN : "<<fixed<<time_taken<<setprecision(9)<<endl;
+		gettimeofday(&end, NULL); 
+		double time_taken; 
+		time_taken = (end.tv_sec - start.tv_sec) * 1e6; 
+		time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+		
+		if(result.size() != 0)
+			cout<<"INDEXED SEARCH : RECORD "<<val<<" FOUND SUCCESSFULLY\n";
+		else
+			cout<<"INDEXED SEARCH : RECORD "<<val<<" NOT FOUND\n";
+		cout<<"NUMBER OF BLOCK ACCESSES: "<<blockAccess<<"\n";
+		cout<<"INDEXED TIME TAKEN : "<<fixed<<time_taken<<setprecision(9)<<endl;
+	}
 	return result;
 }

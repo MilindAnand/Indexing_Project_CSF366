@@ -23,9 +23,12 @@ In root directory:
 11) Insertion into BPTree 
 12) Search in BPTree integrated with the rest of the program
 13) Clustered indexing added
+14) Extensive Testing carried out, with graphs for visualisation
 
-# Things left to do
-1) Testing current functions, especially for multiple tables as that has not been extensively tested
-2) Add time and block access measurements to multilevel indexed search to measure performance
-3) Add further functionalities to BPTree
-4) Serialise BPTree to avoid building it each time.
+# Possible Further Additions
+1) Add further functionalities to BPTree
+2) Serialise BPTree to avoid building it each time.
+3) Add secondary indexing (Single level indexing on non-key non-ordering attribute).
+
+# Issues
+1) There seems to be some issue with the clustered indexing part, which seemed difficult to find/fix; to keep the code from breaking it uses linear search if clustered search fails. Feel free to drop in a PR in case a fix is found.

@@ -50,16 +50,6 @@ public:
 		vals = new kas[MAXorder];
 		pointers = new Node*[MAXorder+1];
 	}
-
-	// void display()
-	// {
-	// 	cout<<"||";
-	// 	for (int i = 0; i < size; i++)
-	// 	{
-	// 		cout<<vals[i].key<<" ";
-	// 	}
-	// 	cout<<"||";
-	// }
 };
 
 class BPTree{
@@ -78,7 +68,6 @@ public:
 
 ret BPTree::search(int _key)
 {
-	// cout<<"Inside search\n\n";
 	if(root == NULL)
 	{
 		ret res(-1, -1, 0);
@@ -87,36 +76,29 @@ ret BPTree::search(int _key)
 	}
 	Node *cursor = root;
 	int height = 0;
-	//cout<<"Key: "<<_key<<endl;
 	while(!(cursor->isLeaf))
 	{
 		for (int i = 0; i < cursor->size; ++i)
 		{
 			// cout<<"Key: "<<_key<<endl;
 			// cout<<"Curr val: "<<cursor->vals[i].key<<endl;
-			// cout<<"Before if\n\n";
 			if(_key < (cursor->vals[i].key))
 			{
-				// cout<<"Inside if\n\n";
 				cursor = cursor->pointers[i];
 				height++;
 				break;
 			}
 			if(i == (cursor->size-1))
 			{
-				// cout<<"Inside else\n\n";
 				cursor = cursor->pointers[i+1];
 				height++;
 				break;
 			}
 		}
-		// if(!(cursor->isLeaf))
-		// 	cout<<"No more leaf\n";
 		//cout<<"Height: "<<height<<endl;
 	}
 	for (int i = 0; i < cursor->size; ++i)
 	{
-		// cout<<"Inside for, Curr val: "<<cursor->vals[i].key<<endl;
 		if(cursor->vals[i].key == _key)
 		{
 			return ret(cursor->vals[i], height);
@@ -135,10 +117,8 @@ ret BPTree::search(int _key)
 
 void BPTree::BPinsert(int _key, int _addr)
 {
-	// cout<<"Inside BPinsert\n\n";
 	if(root==NULL)
 	{
-		// cout<<"Inside if\n\n";
 		root = new Node();
 		kas x(_key, _addr);
 		root->isLeaf = true;
@@ -146,38 +126,29 @@ void BPTree::BPinsert(int _key, int _addr)
 		root->vals[0] = x;
 	}
 	else
-	{	
-		// cout<<"Inside else\n\n";
+	{
 		Node* cursor = root;
 		Node* parent = NULL;
 		while(!(cursor->isLeaf))
 		{
-			// cout<<"Inside while\n\n";
 			parent = cursor;
 			for (int i = 0; i < cursor->size; ++i)
 			{
-				// cout<<"Inside for\n\n";
 				if (_key < cursor->vals[i].key)
 				{
-					// cout<<"Inside first for if \n\n";
 					cursor = cursor->pointers[i];
 					break;
 				}
 				if (i == cursor->size - 1)
 				{
-					// cout<<"Inside second for if \n\n";
 					cursor = cursor->pointers[i+1];
 					break;
 				}
-				// cout<<"Outside for ifs\n\n";
 			}
-			// cout<<"Outside for\n\n";
 		}
-		// cout<<"Outside while \n\n";
 
 		if (cursor->size < MAXorder)
 		{
-			// cout<<"Inside if\n\n";
 			int pos=0;
 			while(_key > cursor->vals[pos].key && pos < cursor->size)
 				pos++;
@@ -193,9 +164,7 @@ void BPTree::BPinsert(int _key, int _addr)
 		}
 		else
 		{
-			// cout<<"Inside else\n\n";
 			Node *newLeaf = new Node();
-			// cout<<"After new\n\n";
 			kas tempNode[MAXorder+1];
 			for (int i = 0; i < MAXorder; i++)
 			{
@@ -203,7 +172,6 @@ void BPTree::BPinsert(int _key, int _addr)
 			}
 
 			int pos=0;
-			// cout<<"Before while\n\n";
 			while(_key > tempNode[pos].key && pos < MAXorder)
 				pos++;
 			kas x(_key, _addr);
@@ -211,7 +179,6 @@ void BPTree::BPinsert(int _key, int _addr)
 			{
 				tempNode[i] = tempNode[i-1];
 			}
-			// cout<<"afteer tempnode for\n\n";
 			tempNode[pos] = x;
 			newLeaf->isLeaf = true;
 			cursor->size = (MAXorder+1)/2;
@@ -219,7 +186,6 @@ void BPTree::BPinsert(int _key, int _addr)
 			cursor->pointers[cursor->size] = newLeaf;
 			newLeaf->pointers[newLeaf->size] = cursor->pointers[MAXorder];
 			cursor->pointers[MAXorder] = NULL;
-			// cout<<"Aftyer pointer stuff\n\n";
 			for(int i = 0; i < cursor->size; i++)
 			{
 				cursor->vals[i] = tempNode[i];
@@ -229,40 +195,30 @@ void BPTree::BPinsert(int _key, int _addr)
 			{
 				newLeaf->vals[i] = tempNode[j];
 			}
-			// cout<<"After fors\n\n";
 			if(cursor == root)
 			{
-				// cout<<"Inside lolif\n\n";
 				Node* newRoot = new Node();
 				newRoot->vals[0] = newLeaf->vals[0];
-				// cout<<"After vals[0]\n\n";
 				newRoot->pointers[0] = cursor;
 				newRoot->pointers[1] = newLeaf;
-				// cout<<"Safe after?\n\n";
 				newRoot->isLeaf = false;
 				newRoot->size = 1;
 				root = newRoot;
 			}
 			else
 			{
-				// cout<<"Calling insert internal\n\n";
 				insertInternal(newLeaf->vals[0], parent, newLeaf);
 			}
-			// cout<<"After ifelse1\n\n";
 		}
-		// cout<<"After ifelse2\n\n";
 	}
-	// cout<<"After ifelse3\n\n";
 }
 
 void BPTree::insertInternal(kas val, Node* cursor, Node* child)
 {
-	// cout<<"Inside insert Internal\n\n";
 	int _key = val.key;
 	int _addr = val.addr;
 	if(cursor->size < MAXorder)
 	{
-		// cout<<"Inside if\n\n";
 		int pos=0;
 		while(_key > cursor->vals[pos].key && pos < cursor->size)
 			pos++;
@@ -278,9 +234,7 @@ void BPTree::insertInternal(kas val, Node* cursor, Node* child)
 	}
 	else
 	{
-		// cout<<"Inside else\n\n";
 		Node* newInternal = new Node();
-		// cout<<"After new\n\n";
 		kas tempVals[MAXorder+1];
 		Node* tempPtrs[MAXorder+2];
 		for(int i = 0; i < MAXorder; i++)
@@ -290,7 +244,6 @@ void BPTree::insertInternal(kas val, Node* cursor, Node* child)
 		}
 		tempPtrs[MAXorder] = cursor->pointers[MAXorder];
 		int pos=0;
-		// cout<<"Before ehilwsdhfj\n\n";
 		while(_key > tempVals[pos].key && pos < MAXorder)
 				pos++;
 		for (int i = MAXorder+1; i > pos; i--)
@@ -317,7 +270,6 @@ void BPTree::insertInternal(kas val, Node* cursor, Node* child)
 
 		if(cursor == root)
 		{
-			// cout<<"Inside lelif\n\n";
 			Node* newRoot = new Node;
 			newRoot->vals[0] = cursor->vals[cursor->size];
 			newRoot->pointers[0] = cursor;
@@ -328,7 +280,6 @@ void BPTree::insertInternal(kas val, Node* cursor, Node* child)
 		}
 		else
 		{
-			// cout<<"Inside lel else\n\n";
 			insertInternal(cursor->vals[cursor->size], getParent(root, cursor), newInternal);
 		}
 	}
@@ -336,26 +287,20 @@ void BPTree::insertInternal(kas val, Node* cursor, Node* child)
 
 Node* BPTree::getParent(Node* cursor, Node* child)
 {
-	// cout<<"Inside getparent\n\n";
 	Node* parent = NULL;
-	//cout<<"Before if par\n\n";
 	if(cursor->isLeaf || (cursor->pointers[0])->isLeaf)
 	{
-		//cout<<"Inside if lala\n\n";
 		return NULL;
 	}
 	for (int i = 0; i < cursor->size + 1; ++i)
 	{
-		//cout<<"Inside for\n\n";
 		if(cursor->pointers[i] == child)
 		{
-			//cout<<"Inside if kek\n\n";
 			parent = cursor;
 			return parent;
 		}
 		else
 		{
-			//cout<<"Inside else kek\n\n";
 			parent = getParent(cursor->pointers[i], child);
 			if (parent != NULL)
 			{
